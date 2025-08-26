@@ -2,7 +2,7 @@ Package: casoils
 Title: California Soil Health Data Visualization and Reporting Tools
 Version: 1.0.1
 Authors@R: c(
-    person("Jadey N", "Ryan", , "jryan@agr.wa.gov", role = c("cre", "aut"),
+    person("Jadey N", "Ryan", , "jryan@agr.wa.gov", role = c("aut"),
       comment = c(ORCID = "0009-0004-5998-4697")
       ),
     person("Molly", "McIlquham", role = "aut",
@@ -19,12 +19,15 @@ Authors@R: c(
     person("Dani L", "Gelardi", role = "aut",
       comment = c(ORCID = "0000-0002-5015-8119")
       ),
-    person("Washington State Department of Agriculture", role = c("cph", "fnd"))
+    person("Washington State Department of Agriculture", role = c("cph", "fnd")),
+    person("Mae", "Simmonds", role = c("cre", "aut"),
+      comment = "Enhanced version with dynamic grouping support")
   )
-Description: Enhanced version of the soils package with dynamic grouping support
-    for California soil health applications. Provides soil health data visualization 
-    and reporting tools, including dynamic grouping capabilities for treatment 
-    comparisons and automated report generation.
+Description: Enhanced version of the soils package (WA-Department-of-Agriculture/soils) 
+    with dynamic grouping support for California soil health applications. Based on 
+    the original soils package by Jadey Ryan et al. Provides soil health data 
+    visualization and reporting tools, including dynamic grouping capabilities for 
+    treatment comparisons and automated report generation.
 License: MIT + file LICENSE
 URL: https://github.com/msimmond/ca-soils
 BugReports: https://github.com/msimmond/ca-soils/issues
