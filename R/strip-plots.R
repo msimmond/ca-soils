@@ -263,7 +263,7 @@ set_dynamic_scales <- function(
   group_colors <- c(primary_color, "#023B2C", "#8B4513", "#4B0082", "#FF6B35", "#2E8B57", "#9370DB", "#FFD700")  # Different colors
   
   # Create scale values
-  scale_values <- sapply(1:length(all_groups), function(i) {
+  scale_values <- lapply(1:length(all_groups), function(i) {
     group_name <- all_groups[i]
     if (group_name %in% producer_groups) {
       # Producer's groups get unique colors and symbols
