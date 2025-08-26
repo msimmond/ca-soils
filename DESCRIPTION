@@ -1,5 +1,5 @@
 Package: casoils
-Title: Visualize and Report Soil Health Data
+Title: California Soil Health Data Visualization and Reporting Tools
 Version: 1.0.1
 Authors@R: c(
     person("Jadey N", "Ryan", , "jryan@agr.wa.gov", role = c("cre", "aut"),
@@ -21,14 +21,13 @@ Authors@R: c(
       ),
     person("Washington State Department of Agriculture", role = c("cph", "fnd"))
   )
-Description: Collection of soil health data visualization and reporting
-    tools, including a RStudio project template with everything you need
-    to generate custom HTML and Microsoft Word reports for each participant 
-    in your soil health sampling project.
+Description: Enhanced version of the soils package with dynamic grouping support
+    for California soil health applications. Provides soil health data visualization 
+    and reporting tools, including dynamic grouping capabilities for treatment 
+    comparisons and automated report generation.
 License: MIT + file LICENSE
-URL: https://github.com/WA-Department-of-Agriculture/soils,
-    https://wa-department-of-agriculture.github.io/soils/
-BugReports: https://github.com/WA-Department-of-Agriculture/soils/issues
+URL: https://github.com/msimmond/ca-soils
+BugReports: https://github.com/msimmond/ca-soils/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 
