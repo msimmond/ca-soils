@@ -20,7 +20,7 @@ Authors@R: c(
       comment = c(ORCID = "0000-0002-5015-8119")
       ),
     person("Washington State Department of Agriculture", role = c("cph", "fnd")),
-    person("Maegen", "Simmonds", role = c("cre", "aut"),
+    person("Maegen", "Simmonds", , "maegen.simmonds@gmail.com", role = c("cre", "aut"),
       comment = "Enhanced version with dynamic grouping support")
   )
 Description: Enhanced version of the soils package (WA-Department-of-Agriculture/soils) 
