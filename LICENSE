@@ -1,2 +1,9 @@
-YEAR: 2022
-COPYRIGHT HOLDER: Washington State Department of Agriculture
+YEAR: 2022-2025
+COPYRIGHT HOLDER: Washington State Department of Agriculture, Maegen Simmonds
+
+This package includes code from the 'soils' package
+(C) 2022 Washington State Department of Agriculture, Jadey Ryan et al.
+
+Additional modifications (C) 2025 Maegen Simmonds.
+
+Licensed under the MIT License.
