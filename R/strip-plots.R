@@ -223,6 +223,107 @@ set_scales <- function(
   return(plot)
 }
 
+#' Define dynamic styles for grouping variables with producer's samples versus all samples
+#'
+#' @param plot `ggplot` object to apply scales to.
+#' @param df Data frame containing the plotting data.
+#' @param grouping_var Column name containing the grouping variable (e.g., "treatment_id").
+#' @param producer_groups Vector of grouping values that belong to the producer.
+#' @param primary_color Color of producer's sample points. Defaults to WaSHI red.
+#' @param other_color Color of other sample points. Defaults to WaSHI tan.
+#' @param language Language of the legend. `"English"` (default) or `"Spanish"`.
+#'
+#' @returns `ggplot` object with dynamic manual alpha, color, shape, and size scales applied.
+#' @export
+#'
+#' @examples
+#' # Example with dynamic grouping
+#' plot <- make_strip_plot(df_plot, color = treatment_id, fill = treatment_id)
+#' set_dynamic_scales(plot, df_plot, "treatment_id", c("No-till", "Standard till"))
+set_dynamic_scales <- function(
+  plot,
+  df,
+  grouping_var,
+  producer_groups,
+  primary_color = "#a60f2d",
+  other_color = "#ccc29c",
+  language = "English"
+) {
+  # Language arg must be "English" or "Spanish"
+  rlang::arg_match(
+    arg = language,
+    values = c("English", "Spanish")
+  )
+
+  # Get all unique groups in the data
+  all_groups <- unique(df[[grouping_var]])
+  
+  # Define symbols and colors for producer groups (supports up to 8 groups)
+  group_symbols <- c(22, 24, 23, 25, 21, 15, 16, 17)  # Square, triangle, diamond, triangle down, circle, square, circle filled, triangle filled
+  group_colors <- c(primary_color, "#023B2C", "#8B4513", "#4B0082", "#FF6B35", "#2E8B57", "#9370DB", "#FFD700")  # Different colors
+  
+  # Create scale values
+  scale_values <- sapply(1:length(all_groups), function(i) {
+    group_name <- all_groups[i]
+    if (group_name %in% producer_groups) {
+      # Producer's groups get unique colors and symbols
+      color_index <- ((which(producer_groups == group_name) - 1) %% length(group_colors)) + 1
+      symbol_index <- ((which(producer_groups == group_name) - 1) %% length(group_symbols)) + 1
+      list(
+        color = group_colors[color_index],
+        fill = glue::glue(group_colors[color_index], "CC"),
+        shape = group_symbols[symbol_index],
+        size = 2.5,
+        alpha = 1
+      )
+    } else {
+      # Other groups get other color and circle symbol
+      list(
+        color = other_color,
+        fill = glue::glue(other_color, "CC"),
+        shape = 21,  # Circle
+        size = 2.5,
+        alpha = 0.8
+      )
+    }
+  })
+  
+  # Apply scales
+  plot <- plot +
+    ggplot2::scale_color_manual(
+      values = setNames(
+        sapply(scale_values, function(x) x$color),
+        all_groups
+      )
+    ) +
+    ggplot2::scale_fill_manual(
+      values = setNames(
+        sapply(scale_values, function(x) x$fill),
+        all_groups
+      )
+    ) +
+    ggplot2::scale_shape_manual(
+      values = setNames(
+        sapply(scale_values, function(x) x$shape),
+        all_groups
+      )
+    ) +
+    ggplot2::scale_size_manual(
+      values = setNames(
+        sapply(scale_values, function(x) x$size),
+        all_groups
+      )
+    ) +
+    ggplot2::scale_alpha_manual(
+      values = setNames(
+        sapply(scale_values, function(x) x$alpha),
+        all_groups
+      )
+    )
+  
+  return(plot)
+}
+
 #' Make a facetted strip plot
 #'
 #' @param df Data frame to plot.
