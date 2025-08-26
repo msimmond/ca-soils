@@ -1,0 +1,17 @@
+^soils\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^README\.Rmd$
+^data-raw
+example_reports
+figure_output
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
+^vignettes/articles$
+^doc$
+^Meta$
+review
+scrap.R
+figures

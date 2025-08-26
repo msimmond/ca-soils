@@ -1,0 +1,22 @@
+utils::globalVariables(c(
+  "abbr",
+  "abbr_unit",
+  "angle",
+  "category",
+  "clay",
+  "dummy",
+  "Field or Average",
+  "field_id",
+  "headers",
+  "label",
+  "measurement_group",
+  "n",
+  "sample_id",
+  "sampleLabel",
+  "sand",
+  "silt",
+  "tables",
+  "texture",
+  "unit",
+  "value"
+))

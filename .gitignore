@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rdata
+.httr-oauth
+.DS_Store
+/inst/figure_output/
+*.docx
+!*word-template.docx
+docs
+inst/doc
+/doc/
+/Meta/
+scrap.R
