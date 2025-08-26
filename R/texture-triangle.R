@@ -148,7 +148,7 @@ make_texture_triangle <- function(
 #' @export
 #'
 #' @examples
-#' texture <- soils::washi_data |>
+#' texture <- casoils::washi_data |>
 #'   dplyr::select(
 #'     sand = sand_percent,
 #'     silt = silt_percent,

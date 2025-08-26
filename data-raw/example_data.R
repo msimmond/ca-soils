@@ -83,19 +83,19 @@ producer_samples <- results_long |>
   dplyr::filter(producer_id == "WUY05" & year == 2023)
 
 # Calculate averages by crop, county, and project
-crop_summary <- soils::summarize_by_var(
+crop_summary <- casoils::summarize_by_var(
   results_long,
   producer_samples,
   var = crop
 )
 
-county_summary <- soils::summarize_by_var(
+county_summary <- casoils::summarize_by_var(
   results_long,
   producer_samples,
   var = county
 )
 
-project_summary <- soils::summarize_by_project(results_long)
+project_summary <- casoils::summarize_by_project(results_long)
 
 producer_table <- producer_samples |>
   dplyr::select(
@@ -159,7 +159,7 @@ saveRDS(tables, here::here("inst/extdata/tables.RDS"))
 # Map function to each measurement group, resulting in a new df with
 # abbreviations and units in a list for make_ft()
 headers <- results_long |>
-  soils::pull_unique(target = measurement_group) |>
+  casoils::pull_unique(target = measurement_group) |>
   as.list() |>
   rlang::set_names() |>
   purrr::map(\(group) get_table_headers(data_dictionary, group))
