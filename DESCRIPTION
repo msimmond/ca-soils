@@ -1,4 +1,4 @@
-Package: ca-soils
+Package: casoils
 Title: Visualize and Report Soil Health Data
 Version: 1.0.1
 Authors@R: c(
@@ -49,6 +49,7 @@ Imports:
     officer,
     purrr,
     quarto,
+    rlang,
     rstudioapi,
     sf,
     tidyterra,
@@ -61,12 +62,11 @@ Suggests:
     here,
     magick,
     ragg,
-    rlang,
     rmarkdown
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Config/testthat/edition: 3
