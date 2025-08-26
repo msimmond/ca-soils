@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "casoils: Soil Health Reporting Tools for California (Based on soils)"
+version: "0.1.0"
+authors:
+  - family-names: "Simmonds"
+    given-names: "Maegen"
+repository-code: "https://github.com/msimmond/ca-soils"
+date-released: 2025-08-18
+keywords:
+  - soil health
+  - R
+  - Quarto
+  - California
+license: MIT
+preferred-citation:
+  type: software
+  title: "casoils: Soil Health Reporting Tools for California (Based on soils)"
+  authors:
+    - family-names: "Simmonds"
+      given-names: "Maegen"
+  year: 2025
+  version: "0.1.0"
+  url: "https://github.com/msimmond/ca-soils"
+
+references:
+  - type: software
+    title: "soils: Soil Health Reports"
+    authors:
+      - family-names: "Ryan"
+        given-names: "Jadey"
+      - name: "Other contributors"
+    year: 2022
+    url: "https://github.com/WA-Department-of-Agriculture/soils"
+    license: MIT 
