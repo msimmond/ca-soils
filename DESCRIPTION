@@ -1,4 +1,4 @@
-Package: soils
+Package: ca-soils
 Title: Visualize and Report Soil Health Data
 Version: 1.0.1
 Authors@R: c(
