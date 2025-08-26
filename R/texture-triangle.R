@@ -293,53 +293,39 @@ add_legend <- function(
 # Adapted from {plotrix}:
 # https://github.com/plotrix/plotrix/blob/0d4c2b065e2c2d327358ac8cdc0b0d46b89bea7f/R/triax_R.
 
-triax_points <- function(
-  x,
-  color,
-  pch,
-  size,
-  ...
-    ) {
-  df <- x
-
-  x <- x[mapply(is.numeric, x)]
-
-  if (grDevices::dev.cur() == 1) {
-    stop("Cannot add points unless the triax_frame has been drawn")
-  }
-  if (missing(x)) {
-    stop("Usage: triax_points(x,...)\n\twhere x is a 3 column array of proportions or percentages")
-  }
+triax_points <- function(x, color, pch, size, ...) {
+  if (missing(x) || is.null(x)) return(invisible(list(x = numeric(0), y = numeric(0))))
   if (!is.matrix(x) && !is.data.frame(x)) {
-    stop("x must be a matrix or data frame with at least 3 columns and one row.")
+    stop("x must be a matrix/data.frame with ≥3 columns.")
   }
-  if (any(x > 1) || any(x < 0)) {
-    if (any(x < 0)) {
-      stop("All proportions must be between zero and one.")
+  # If columns are named, try to reorder to sand,silt,clay (case-insensitive)
+  if (!is.null(colnames(x))) {
+    nm <- tolower(colnames(x))
+    pick <- c(which(grepl("^sand", nm)), which(grepl("^silt", nm)), which(grepl("^clay", nm)))
+    if (length(pick) >= 3) {
+      x <- x[, pick[1:3], drop = FALSE]
     }
-    if (any(x > 100)) {
-      stop("All percentages must be between zero and 100.")
-    }
-    # convert percentages to proportions
+  }
+  # Keep only numeric columns
+  x <- x[, vapply(x, is.numeric, logical(1)), drop = FALSE]
+  if (ncol(x) < 3 || nrow(x) == 0) return(invisible(list(x = numeric(0), y = numeric(0))))
+
+  # Use first 3 numeric columns
+  x <- x[, 1:3, drop = FALSE]
+
+  # percentage → proportion
+  if (any(x > 1, na.rm = TRUE) || any(x < 0, na.rm = TRUE)) {
+    if (any(x < 0, na.rm = TRUE)) return(invisible(list(x = numeric(0), y = numeric(0))))
     x <- x / 100
   }
-  if (any(abs(rowSums(x) - 1) > 0.01)) {
-    warning("At least one set of proportions does not equal one.")
-  }
-  sin60 <- sin(pi / 3)
+  x <- x[stats::complete.cases(x), , drop = FALSE]
+  if (nrow(x) == 0) return(invisible(list(x = numeric(0), y = numeric(0))))
 
+  sin60 <- sin(pi / 3)
   ypos <- x[, 3] * sin60
   xpos <- 1 - (x[, 1] + x[, 3] * 0.5)
 
-  graphics::points(
-    x = xpos,
-    y = ypos,
-    pch = pch,
-    col = color,
-    cex = size,
-    type = "p",
-    ...
-  )
+  graphics::points(x = xpos, y = ypos, pch = pch, col = color, cex = size, type = "p", ...)
   invisible(list(x = xpos, y = ypos))
 }
 
