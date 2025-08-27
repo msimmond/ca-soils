@@ -1,0 +1,15 @@
+## [**Physical**]{style="color: #a60f2d"} ![](images/physical.png){height="50px"}\newline\newline
+
+***Soil Texture*** is the relative proportion of sand, silt, and clay-sized particles in your soil. Imagine these particles like basketballs, golf balls, and poppy seeds, which are very different in size even though soil particles don’t appear different to the naked eye. Importantly, soil texture describes only the mineral portion of the soil, which cannot be changed through management. However, soil texture is a significant driver of how soils respond to management. Soils with higher clay content can hold more nutrients, organic matter, and water than sandy soils. This is because clay particles have high surface area and electrical charge that create small soil pores and a “holding capacity”. Soils with high sand content have larger pores, and cannot hold as much water.
+
+Soil texture was measured via hydrometer, after the removal of larger (>2mm) soil particles.
+
+***Wet Aggregate Stability*** measures the resistance of soil aggregates to disintegration. Aggregates form when soil particles associate with organic matter, plant roots, fungal hyphae, and “glues” made by soil microbes; this shows how biological life in the soil impacts soil physical properties. Stable aggregates can reduce erosion, and increase infiltration, drainage, and storage capacity. High clay soils tend to have higher aggregate stability, but increasing soil organic matter improves aggregate stability across all soil textures.
+
+Aggregate stability was measured two ways: 1) the percentage of 0.25-2.00 mm aggregates that stay intact after exposure to artificial rain. A higher value means that a greater percentage of the soil remained aggregated. 2) For the in-field measurements, we collected intact soil aggregates, dried them for at least 24 hours, and then measured their disintegration when submerged in water using the camera function as part of the SLAKES App. The results of this app provide an Index score from ~0.1 to 1.0; a higher number indicating greater aggregate stability.
+
+***Infiltration Rate*** measures the rate at which water enters the soil surface. Texture, salinity, plow pans, and soil structure drive water movement in the soil. Infiltration is supported by soil movement and aggregation by ecosystem engineers (ants, earthworms, enchytraeids) and plant roots and fungal hyphae.
+
+In this assessment, infiltration was measured in-field by timing how long it took for a first and second inch of water to infiltrate into the soil profile using a single ring infiltration test, with a cut-off time of 30 minutes.
+
+

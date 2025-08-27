@@ -1,0 +1,56 @@
+## Soil Health Indicators
+
+The below table describes: 1. What each indicator helps measure in your soil; 2.
+Whether you want the measured value to be higher (more is better), lower (less
+is better), or in the middle (optimal range); and 3. How often to measure each
+indicator. Our understanding of these indicators is rapidly evolving as
+researchers measure them in diverse soils, cropping systems, and climates.
+
+![](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-more.png){width="1.5in"
+fig-alt="More is better scoring curve"}![](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-optimal.png){width="1.5in"
+fig-alt="Optimal range scoring curve"}![](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-less.png){width="1.5in"
+fig-alt="Less is better scoring curve"}
+
+
+```{r}
+# Indicators table loader with fallbacks + clear errors
+# This prevents hard failures if the CSV is missing or moved.
+
+indicators_path_candidates <- c(
+  "inst/extdata/indicators.csv",         # preferred (inst/extdata)
+  here::here("inst", "extdata", "indicators.csv"),  # robust project-root path
+  file.path("..", "inst", "extdata", "indicators.csv"), # parent directory fallback
+  file.path("..", "..", "inst", "extdata", "indicators.csv") # grandparent directory fallback
+)
+
+indicators_path <- NULL
+for (p in indicators_path_candidates) {
+  if (!is.null(p) && file.exists(p)) { 
+    indicators_path <- p; 
+    break 
+  }
+}
+
+if (is.null(indicators_path)) {
+  warning(
+    "Could not find 'indicators.csv'. Skipping the indicator table section. ",
+    "Looked in: ", paste(indicators_path_candidates, collapse = " | ")
+  )
+} else {
+  indicators <- read.csv(indicators_path, check.names = FALSE, encoding = "UTF-8")
+}
+```
+
+```{r}
+if (exists("indicators", inherits = FALSE) && nrow(indicators) > 0) {
+  flextable::as_flextable(indicators) |>
+  soils::style_ft(
+    header_font = header_font,
+    body_font = body_font,
+    header_color = header_color,
+    header_text_color = header_text_color,
+    border_color = border_color
+  ) |>
+  flextable::set_table_properties(layout = "autofit")
+}
+```

@@ -1,0 +1,10 @@
+# =============================================================================
+# Soil Health Shiny App — Minimal Configuration
+# =============================================================================
+
+paths:
+  # Quarto template (QMD) to render
+  template: "quarto/report_template.qmd"
+  
+  # Where rendered HTML reports will be saved
+  output_dir: "outputs" 

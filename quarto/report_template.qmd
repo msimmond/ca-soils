@@ -1,0 +1,1155 @@
+---
+title: "![](images/logo.png) Soil Health Assessment Project </span><br> Regional Region"
+subtitle: "Producer Report"
+params:
+  producer_id: null
+  year: null
+  grouping_var: null
+  data_path: null
+  config: null
+  dict_path: null
+
+# Shouldn't need to edit the below values unless you want to customize.
+lang: en
+execute:
+  echo: false
+  warning: false
+  message: false
+  output: true
+knitr: 
+  opts_chunk:
+    dev: "ragg_png"
+    tbl.cap: NULL
+    ft.align: "left"
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    link-external-newwindow: true
+    embed-resources: true
+    css: www/css/styles.css
+  docx:
+    reference-doc: inst/templates/report_template.docx
+format-links: false
+fig-align: left
+fig-width: 6
+fig-height: 3.5
+fig-dpi: 300
+---
+
+<!-- Attach soils package, set up paths -->
+
+```{r setup}
+# Load the casoils package (our modified version)
+library(casoils)
+library(dplyr)
+library(tidyr)
+library(flextable)
+library(stringr)
+library(openxlsx)
+library(readxl)  # For reading Excel files
+library(cowplot)
+library(patchwork)
+library(ggplot2)
+library(ggpubr)
+library(officer)
+library(here)
+library(testthat)
+library(quarto)
+library(ggiraph)
+library(ggtext)
+
+# Access all params
+cfg         <- params$config
+data_path   <- params$data_path
+producer_id <- params$producer_id
+year        <- params$year
+grouping    <- params$grouping_var
+
+# DEBUG: log every read.csv and utils::read.csv call
+if (interactive() || TRUE) {
+  # mask unqualified calls
+  read.csv <- function(file, ...) {
+    message("DEBUG read.csv -> ", normalizePath(file, winslash = "/", mustWork = FALSE))
+    utils::read.csv(file, ...)
+  }
+  # trace namespace-qualified calls
+  if (requireNamespace("utils", quietly = TRUE)) {
+    try(trace(utils::read.csv,
+              quote(message("TRACE utils::read.csv -> ", normalizePath(file, winslash = "/", mustWork = FALSE))),
+              print = FALSE), silent = TRUE)
+  }
+}
+
+# Sanity checks to fail fast with a clear message
+stopifnot(!is.null(cfg), !is.null(data_path), !is.null(producer_id), !is.null(year))
+
+# Get output file type
+out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+
+# Figure directory (make fresh, then tell knitr)
+fig_dir <- "figure-output"
+if (fs::dir_exists(fig_dir)) fs::dir_delete(fig_dir)
+fs::dir_create(fig_dir)
+knitr::opts_chunk$set(fig.path = file.path(fig_dir, "fig-"))
+
+# Path used by manual device writers below
+path <- fig_dir
+
+# Set reference document path for Word output
+reference_doc <- here::here("inst", "templates", "report_template.docx")
+```
+
+<!-- Load data and dictionary -->
+
+```{r load-data, include=FALSE}
+# Load lab results from Excel or CSV file
+file_ext <- tools::file_ext(params$data_path)
+if (file_ext %in% c("xlsx", "xls")) {
+  # For Excel files, check available sheets and use the data sheet
+  sheets <- readxl::excel_sheets(params$data_path)
+  message("Available sheets: ", paste(sheets, collapse = ", "))
+  
+  # Use second sheet if multiple sheets exist (first is usually instructions)
+  data_sheet <- if (length(sheets) >= 2) sheets[2] else sheets[1]
+  message("Using data sheet: ", data_sheet)
+  
+  data <- readxl::read_excel(params$data_path, sheet = data_sheet) |> as.data.frame()
+} else {
+  # For CSV files, use read.csv as before
+  data <- read.csv(
+    params$data_path,
+    check.names = FALSE,
+    encoding = "UTF-8",
+    strip.white = TRUE
+  )
+}
+
+# Data loaded successfully
+
+# Crop filtering is handled in the app UI, no need to filter here
+
+# Data should already have standardized column names from the mapping
+# Just ensure coordinates are numeric
+if ("latitude" %in% names(data)) {
+  data$latitude <- as.numeric(data$latitude)
+}
+if ("longitude" %in% names(data)) {
+  data$longitude <- as.numeric(data$longitude)
+}
+
+# Abort if there are duplicate sample IDs.
+if (anyDuplicated(data$sample_id)) {
+  cli::cli_abort(c(
+    "All values in {.var sample_id} must be unique.",
+    "x" = "Found duplicate{?s} of\
+                 {.val {unique(data$sample_id[duplicated(data$sample_id)])}}"
+  ))
+}
+```
+
+```{r load-dictionary, include=FALSE}
+# Load data dictionary from Excel file or fallback
+file_ext <- tools::file_ext(params$data_path)
+if (file_ext %in% c("xlsx", "xls")) {
+  # Read dictionary from "Data Dictionary" sheet in the same Excel file
+  sheets <- readxl::excel_sheets(params$data_path)
+  if ("Data Dictionary" %in% sheets) {
+    dictionary <- readxl::read_excel(params$data_path, sheet = "Data Dictionary") |> as.data.frame()
+    message("Loaded dictionary from 'Data Dictionary' sheet")
+  } else {
+    stop("Excel file must contain a 'Data Dictionary' sheet. Available sheets: ", 
+         paste(sheets, collapse = ", "))
+  }
+} else {
+  # For CSV files, use the old logic
+  dictionary <- NULL
+  if (!is.null(params$dict_path) && file.exists(params$dict_path)) {
+    dictionary <- read.csv(params$dict_path, check.names = FALSE, encoding = "UTF-8")
+  } else {
+    dictionary <- attr(data, "measurement_info")
+    if (is.null(dictionary)) {
+      message("Dictionary attribute not found on data; falling back to file…")
+      # Prefer an explicit path from config if you have it
+      dict_path <- tryCatch(
+        cfg$paths$data_dictionary,
+        error = function(e) NULL
+      )
+      if (is.null(dict_path) || !file.exists(dict_path)) {
+        # Final fallback to repo copy
+        dict_path <- file.path("inst", "extdata", "data_dictionary_v3.csv")
+      }
+      if (!file.exists(dict_path)) {
+        stop("Data dictionary not found. Tried cfg$paths$data_dictionary and ",
+             "data/data_dictionary_v3.csv")
+      }
+      dictionary <- read.csv(dict_path, check.names = FALSE, encoding = "UTF-8")
+    }
+  }
+}
+
+# Normalize expected columns / derived fields
+if (!"abbr" %in% names(dictionary) && "abbreviation" %in% names(dictionary)) {
+  dictionary$abbr <- dictionary$abbreviation
+}
+
+dictionary <- dictionary |>
+  dplyr::mutate(
+    # Concatenate abbr and unit with html break for the table and plot labels
+    abbr_unit = glue::glue("{abbr}<br>{unit}"),
+    # Set the order of how measurement groups will appear within the report
+    # based on the order found in the data dictionary
+    group_order = dplyr::cur_group_id(),
+    # Set the order of how measurements will appear within each measurement
+    # group based on the order found in the data dictionary
+    measurement_order = seq_along(column_name),
+    .by = measurement_group
+  )
+
+# Get vector of measurement groups from dictionary
+measurement_groups <- unique(dictionary$measurement_group)
+```
+
+```{r data-validation}
+# Column validation is handled during data upload, no need to check here
+
+required_dict_cols <- c(
+  "measurement_group",
+  "column_name",
+  "abbr",
+  "unit"
+)
+
+# Check all column names in `data` are in the `required_cols` vector or
+# Check that `dictionary` has required column names.
+testthat::expect_contains(names(dictionary), required_dict_cols)
+
+# Check that the measurement_groups are in the dictionary.
+testthat::expect_in(measurement_groups, dictionary$measurement_group)
+```
+
+<!-- Set styling variables -->
+
+```{r set-fonts-colors}
+# EDIT: Replace any font names and colors to match your branding.
+header_font <- "Georgia"
+body_font <- "Arial"
+
+# Flextable colors -----------------------------------------------------
+
+# header background color
+header_color <- "#023B2C"
+# header text color
+header_text_color <- "white"
+# body darker background color
+darker_color <- "#ccc29c"
+# body lighter background color
+lighter_color <- "#F2F0E6"
+# border color
+border_color <- "#3E3D3D"
+
+# Map and plot colors -----------------------------------------------------
+
+# point color for producer samples
+primary_color <- "#a60f2d"
+# point color for samples in same categories as producer
+secondary_color <- "#3E3D3D"
+# point color for all other samples in project
+other_color <- "#ccc29c"
+
+# facet strip background color
+strip_color <- "#335c67"
+# facet strip text color
+strip_text_color <- "white"
+```
+
+<!-- Pivot data longer and join with data dictionary -->
+
+```{r tidy-long}
+# EDIT: `washi_data` example has soil measurements in columns 12 - 42. Replace
+# this column range with the column indices of the soil measurements in your
+# dataset.
+
+# Tidy data into long format and join with data dictionary
+# Only pivot columns that are in the data dictionary (measurements), excluding texture
+measurement_cols <- dictionary$column_name[dictionary$column_name %in% names(data) & dictionary$column_name != "texture"]
+cat("Debug - Measurement columns to pivot:", paste(measurement_cols, collapse = ", "), "\n")
+
+results_long <- data |>
+  dplyr::mutate(
+    dplyr::across(
+      # Only convert measurement columns to numeric
+      all_of(measurement_cols),
+      as.numeric
+    )
+  ) |>
+  tidyr::pivot_longer(
+    # Only pivot measurement columns, preserve metadata columns
+    cols = all_of(measurement_cols),
+    names_to = "measurement"
+  ) |>
+  dplyr::inner_join(dictionary, by = c("measurement" = "column_name")) |>
+  dplyr::mutate(
+    sample_id = sample_id, ### sample_id should already be created from mapping 
+    group_order = factor(
+      group_order,
+      levels = unique(dictionary$group_order),
+      ordered = unique(is.ordered(dictionary$group_order))
+    ),
+    abbr = factor(
+      abbr,
+      levels = dictionary$abbr,
+      ordered = is.ordered(dictionary$measurement_order)
+    ),
+    abbr_unit = factor(
+      abbr_unit,
+      levels = dictionary$abbr_unit,
+      ordered = is.ordered(dictionary$measurement_order)
+    )
+  ) |>
+  dplyr::arrange(group_order, measurement_order) |>
+  dplyr::filter(!is.na(value))
+```
+
+<!-- Get producer info -->
+
+```{r get-producer-info}
+# producer_id should not be blank - this would be caught in data validation
+
+# Use the selected grouping variable for field_id if it exists
+if (!is.null(params$grouping_var) && params$grouping_var %in% names(results_long)) {
+  results_long$field_id <- results_long[[params$grouping_var]]
+}
+
+
+
+# Subset to producer samples - handle data type mismatches
+producer_samples <- results_long |>
+  dplyr::filter(producer_id == params$producer_id & 
+                as.character(year) == as.character(params$year))
+
+# Abort if there are no producer samples
+if (nrow(producer_samples) == 0) {
+  cat("Debug - No producer samples found. Available producers:", unique(results_long$producer_id), "\n")
+  cat("Debug - Looking for:", params$producer_id, "\n")
+  cat("Debug - Available years:", unique(results_long$year), "\n")
+  cat("Debug - Looking for year:", params$year, "\n")
+  # Temporarily comment out the error to see what happens
+  # cli::cli_abort(c(
+  #   "i" = "Update {.code params} in YAML to a valid {.code producer_id} and\
+  #   {.code year} combo.",
+  #   "x" = "{.code {params$producer_id}} and {.code {params$year}} must exist\
+  #    in your data."
+  # ))
+}
+
+# Extract producer sample IDs, crops, counties, and farm name into
+# producer list
+# Extract producer info - use standard columns and selected grouping variable
+producer_cols <- c("producer_id", "sample_id")
+if (!is.null(params$grouping_var) && params$grouping_var %in% names(data)) {
+  producer_cols <- c(producer_cols, params$grouping_var)
+}
+if ("crop" %in% names(data)) producer_cols <- c(producer_cols, "crop")
+
+producer <- producer_cols |>
+  rlang::set_names() |>
+  purrr::map(\(x) casoils::pull_unique(
+    df = producer_samples,
+    target = x
+  ))
+
+# In case of multiple farm names, grab first one
+#producer$farm_name <- if (producer$farm_name > 1) producer$farm_name[[1]]
+
+# Remove measurements that producer did not have tested
+results_long <- results_long |>
+  dplyr::filter(measurement %in% producer_samples$measurement)
+```
+
+<!-- GIS data prep -->
+
+```{r prep-gis-df}
+# Prep data for GIS table and map
+# Use the selected grouping variable for labels, or sample_id as fallback
+label_col <- if (!is.null(params$grouping_var) && params$grouping_var %in% names(producer_samples)) {
+  params$grouping_var
+} else {
+  "sample_id"  # ultimate fallback
+}
+
+gis_df <- casoils::prep_for_map(
+  producer_samples,
+  label_heading = .data[[label_col]],
+  # If crop is empty, omit from popup
+  label_body = ifelse("crop" %in% names(producer) && !is.na(producer$crop), producer$crop, "")
+)
+```
+
+<!-- Data wrangling for flextables -->
+
+```{r calculate-averages}
+# Calculate averages by the selected grouping variable
+# Handle cases where grouping_var might be NULL or not exist in data
+cat("Debug - grouping_var value:", params$grouping_var, "\n")
+cat("Debug - grouping_var class:", class(params$grouping_var), "\n")
+cat("Debug - grouping_var in names:", params$grouping_var %in% names(producer_samples), "\n")
+
+if (!is.null(params$grouping_var) && params$grouping_var != "" && params$grouping_var %in% names(producer_samples)) {
+  grower_summary <- producer_samples |>
+    dplyr::filter(!is.na(.data[[params$grouping_var]])) |>
+    casoils::summarize_by_var(
+      producer_samples,
+      var = !!rlang::sym(params$grouping_var)
+    )
+} else {
+  # Fallback: create a simple summary without grouping
+  grower_summary <- producer_samples |>
+    dplyr::summarize(
+      value = mean(value, na.rm = TRUE),
+      .by = c(measurement_group, abbr)
+    ) |>
+    dplyr::mutate(
+      `Field or Average` = "Producer Average"
+    )
+}
+
+grower_summary <- grower_summary |>
+  dplyr::mutate(`Field or Average` = dplyr::case_when(
+    `Field or Average` == "one Average \n(1 Fields)" ~ "Your Fields Average",
+    `Field or Average` == "two Average \n(1 Fields)" ~ "Your Fields Average",
+    TRUE ~ `Field or Average`
+  ))
+
+# Calculate all annual cropping growers average 
+n <- dplyr::n_distinct(results_long$sample_id)
+
+field_summary <- results_long |>
+  dplyr::summarize(
+    value = mean(value, na.rm = TRUE),
+    .by = c(measurement_group, abbr)
+  ) |>
+  dplyr::mutate(
+     `Field or Average` = glue::glue("Project Average")
+  )
+
+```
+
+```{r combine-producer-and-summaries}
+# Combine producer table with summaries
+# Use the selected grouping variable for the table, or sample_id as fallback
+table_col <- if (!is.null(params$grouping_var) && params$grouping_var != "" && params$grouping_var %in% names(producer_samples)) {
+  params$grouping_var
+} else {
+  "sample_id"  # ultimate fallback
+}
+
+producer_table <- producer_samples |>
+  dplyr::select(
+    measurement_group,
+    abbr,
+    value,
+    "Field or Average" = .data[[table_col]],
+    Texture = texture
+  )
+
+# Bind together into one df and round values to 2 digits
+df_table <- dplyr::bind_rows(
+  grower_summary,
+  field_summary
+) |>
+  dplyr::mutate(
+    value = as.numeric(formatC(value, 2, drop0trailing = TRUE))
+  )
+```
+
+```{r split-into-groups}
+# Split into list with each measurement group as its own df and pivot wider
+groups <- df_table |>
+  split(df_table$measurement_group) |>
+  purrr::map(\(x) {
+    tidyr::pivot_wider(
+      x,
+      id_cols = c("Field or Average", Texture),
+      names_from = abbr
+    )
+  })
+```
+
+```{r physical-group-tweaks}
+# Special wrangling for texture
+
+# Extract physical df from averages list
+physical <- list(Physical = groups$Physical)
+
+# Remove texture from all dataframes except physical
+groups <- purrr::map(
+  subset(
+    groups,
+    !(names(groups) == "Physical")
+  ),
+  \(x) dplyr::select(x, -Texture)
+)
+
+# Add physical df back to the averages list
+groups <- c(groups, physical)
+
+# Remove this intermediate variable from env
+rm(physical)
+```
+
+```{r remove-rows-with-one-observation}
+# Delete any county or crop averages where n = 1 or county/crop is blank.
+tables <- groups |>
+  purrr::map(
+    subset,
+    !grepl("(^1 Fields)|NA", `Field or Average`)
+  )
+
+# Order list of tables based on how they appear in dictionary. Important that
+# tables and headers are in the same order for the make-flextables chunk.
+tables <- tables[measurement_groups]
+```
+
+```{r get-headers-for-flextable}
+# Map function to each measurement group, resulting in a new df with
+# abbreviations and units in a list for make_ft()
+headers <- results_long |>
+  casoils::pull_unique(target = measurement_group) |>
+  as.list() |>
+  rlang::set_names() |>
+  purrr::map(\(group) get_table_headers(dictionary, group))
+```
+
+```{r make-flextables}
+# Create a list containing a flextable for each measurement group
+table_list <- list2DF(
+  list(
+    table = tables,
+    header = headers
+  )
+) |>
+  purrr::pmap(\(table, header) {
+    casoils::make_ft(table, header) |>
+      casoils::format_ft_colors(
+        lighter_color = lighter_color,
+        darker_color = darker_color
+      ) |>
+      casoils::style_ft(
+        header_font = header_font,
+        body_font = body_font,
+        header_color = header_color,
+        header_text_color = header_text_color,
+        border_color = border_color
+      ) |>
+      casoils::unit_hline(header = header) |>
+      flextable::set_table_properties(layout = "autofit")
+  })
+```
+
+<!-- Plots -->
+
+```{r prep-df-plot}
+# Prep df for texture triangle and strip plots
+# Group by measurement metadata + selected grouping variable (NOT sample_id)
+group_cols <- c("measurement", "measurement_group", "abbr", "unit", "abbr_unit")
+if (!is.null(params$grouping_var) && params$grouping_var %in% names(results_long)) {
+  group_cols <- c(group_cols, params$grouping_var)
+}
+
+# Calculate averages by group
+results_long_summary <- results_long |>
+  dplyr::summarize(
+    value = mean(value, na.rm = TRUE),
+    .by = all_of(group_cols)
+  ) 
+
+# Create plot dataframe with simple category assignment
+df_plot <- results_long_summary |>
+  dplyr::mutate(
+    dummy = "dummy"  # For x-axis positioning
+  )
+
+# Determine the effective grouping variable (use sample_id as fallback)
+effective_grouping_var <- if (!is.null(params$grouping_var) && 
+                              params$grouping_var != "" &&
+                              params$grouping_var %in% names(results_long_summary)) {
+  params$grouping_var
+} else {
+  "sample_id"  # Fallback to sample_id if no grouping variable
+}
+
+# Add sample_id for compatibility with soils package functions
+# Use a unique identifier for each aggregated group
+df_plot <- df_plot |>
+  dplyr::mutate(
+    sample_id = paste0("group_", row_number())  # Unique ID for each aggregated group
+  )
+
+# Add category column based on effective grouping variable
+if (effective_grouping_var %in% names(producer) && 
+    length(producer[[effective_grouping_var]]) > 0) {
+  
+  df_plot <- df_plot |>
+    dplyr::mutate(
+      category = dplyr::case_when(
+        .data[[effective_grouping_var]] %in% producer[[effective_grouping_var]] ~ "Your Fields",
+        TRUE ~ "Other Fields"
+      ),
+      category = factor(category, levels = c("Your Fields", "Other Fields"))
+    )
+} else {
+  # Fallback: mark everything as "Other Fields"
+  df_plot <- df_plot |>
+    dplyr::mutate(
+      category = "Other Fields",
+      category = factor(category, levels = c("Your Fields", "Other Fields"))
+    )
+}
+
+# Add plotting_group column for colors/symbols
+if (!is.null(params$grouping_var) && params$grouping_var != "" && params$grouping_var %in% names(df_plot)) {
+  # When grouping variable is selected, use it for plotting
+  df_plot <- df_plot |>
+    dplyr::mutate(
+      plotting_group = dplyr::case_when(
+        category == "Your Fields" ~ .data[[params$grouping_var]],
+        TRUE ~ paste0("Other_", .data[[params$grouping_var]])  # Preserve original values for Other Fields
+      )
+    )
+} else {
+  # When no grouping variable, use category for plotting
+  df_plot <- df_plot |>
+    dplyr::mutate(
+      plotting_group = category
+    )
+}
+
+# Add label column based on plotting_group
+df_plot <- df_plot |>
+  dplyr::mutate(
+    label = dplyr::case_when(
+      category == "Your Fields" ~ glue::glue("{plotting_group}<br>{value} {unit}"),
+      TRUE ~ glue::glue("{value} {unit}")
+    )
+  )
+
+# Order so producer points are plotted on top
+df_plot <- df_plot[order(df_plot$category, decreasing = TRUE), ]
+
+# Normalize legend categories ("Your Fields" / "Other Fields") once
+df_plot <- df_plot |>
+  dplyr::mutate(
+    category = ifelse(category %in% c("Your fields","Your Fields"), "Your Fields",
+                      ifelse(category %in% c("Other fields","Other Fields"), "Other Fields", category)),
+    category = factor(category, levels = c("Your Fields", "Other Fields"))
+  )
+```
+
+```{r prep-texture-triangle}
+# --- Build texture data from the raw long data (not df_plot) ---
+
+has_group <- !is.null(params$grouping_var) &&
+             params$grouping_var != "" &&
+             params$grouping_var %in% names(results_long)
+
+# 1) Keep only texture measures
+tex_long <- results_long |>
+  dplyr::filter(tolower(abbr) %in% c("sand","silt","clay")) |>
+  dplyr::mutate(tex_name = tolower(abbr))
+
+# 2) Tag Your vs Other by producer + year
+tex_long <- tex_long |>
+  dplyr::mutate(
+    category = dplyr::case_when(
+      producer_id == params$producer_id & as.character(year) == as.character(params$year) ~ "Your Fields",
+      TRUE ~ "Other Fields"
+    )
+  )
+
+# 3) Aggregation keys (what defines a single point)
+#    Your Fields:  producer + year + (grouping var if present)
+#    Other Fields: other producer + year + (grouping var if present)
+your_keys  <- c("producer_id","year")
+other_keys <- c("producer_id","year")
+if (has_group) {
+  your_keys  <- c(your_keys,  params$grouping_var)
+  other_keys <- c(other_keys, params$grouping_var)
+}
+
+# 4) Legend/plotting group (what drives symbol/color and legend text)
+#    Your Fields:  the selected grouping var value (e.g., treatment_id)
+#    Other Fields: constant "Other Fields"
+tex_long <- tex_long |>
+  dplyr::mutate(
+    legend_group = dplyr::case_when(
+      category == "Your Fields" & has_group ~ as.character(.data[[params$grouping_var]]),
+      category == "Your Fields"             ~ "Your Fields",
+      TRUE                                   ~ "Other Fields"
+    )
+  )
+
+# 5) Aggregate to one row per (category, key, legend_group, tex_name)
+agg <- tex_long |>
+  dplyr::mutate(
+    key = dplyr::if_else(
+      category == "Your Fields",
+      interaction(!!!rlang::syms(your_keys),  drop = TRUE),
+      interaction(!!!rlang::syms(other_keys), drop = TRUE)
+    )
+  ) |>
+  dplyr::summarize(
+    value = mean(value, na.rm = TRUE),
+    .by = c(category, key, legend_group, tex_name)
+  ) |>
+  tidyr::pivot_wider(names_from = tex_name, values_from = value) |>
+  # plotting_group will be used for color/shape and legend matching
+  dplyr::mutate(plotting_group = legend_group) |>
+  dplyr::select(sand, silt, clay, category, plotting_group)
+
+# Split lists used by the drawing code
+texture_list <- split(agg, agg$category) |>
+  purrr::map(\(df) dplyr::select(df, sand, silt, clay, plotting_group))
+
+# Producer must have at least one complete texture row
+producer_texture <- dplyr::filter(agg, category == "Your Fields") |>
+  dplyr::select(sand, silt, clay)
+
+make_tt <- nrow(producer_texture) > 0 &&
+           all(c("sand","silt","clay") %in% names(producer_texture)) &&
+           any(stats::complete.cases(producer_texture[, c("sand","silt","clay")]))
+
+# Debug: print a tiny sample right before plotting
+if (exists("agg")) {
+  print(head(agg, 10))
+  print(table(agg$category, agg$plotting_group, useNA="ifany"))
+}
+```
+
+```{r make-texture-triangle, fig.cap="Soil texture triangle", out.width="100%", fig.align="center", message=TRUE}
+ragg::agg_png(file.path(path, "texture-triangle.png"), res = 150, width = 1500, height = 1000, scaling = 1)
+casoils::make_texture_triangle(body_font = body_font)
+
+.add_pts <- function(df, col, bg, pch, size) {
+  if (!is.null(df) && nrow(df) > 0) {
+    xyz <- df[, c("sand","silt","clay"), drop = FALSE]
+    xyz <- xyz[stats::complete.cases(xyz), , drop = FALSE]
+    if (nrow(xyz)) {
+      casoils::add_texture_points(xyz, color = col, bg = bg, pch = pch, size = size)
+    }
+  }
+}
+
+# Which producer groups exist this year (values of the chosen grouping var)
+producer_groups <- if (!is.null(params$grouping_var) &&
+                        params$grouping_var %in% names(producer_samples)) {
+  unique(na.omit(producer_samples[[params$grouping_var]]))
+} else character(0)
+
+# Symbol/color maps reused across figures
+group_symbols <- c(22, 24, 23, 25, 21, 15, 16, 17)
+group_colors  <- c(primary_color, "#023B2C", "#8B4513", "#4B0082",
+                   "#FF6B35", "#2E8B57", "#9370DB", "#FFD700")
+sym_map <- stats::setNames(group_symbols[seq_along(producer_groups)], producer_groups)
+col_map <- stats::setNames(group_colors [seq_along(producer_groups)], producer_groups)
+
+# 1) All Other fields points (now one point per other producer+year+grouping var)
+if (!is.null(texture_list$`Other Fields`)) {
+  .add_pts(
+    texture_list$`Other Fields`,
+    col = base::paste0(as.character(other_color), "CC"),
+    bg  = base::paste0(as.character(other_color), "99"),
+    pch = 21,
+    size = 1.36
+  )
+}
+
+# 2) Your fields, one symbol/color per producer group value
+if (!is.null(texture_list$`Your Fields`)) {
+  yf <- texture_list$`Your Fields`
+  if (length(producer_groups)) {
+    for (g in names(sym_map)) {
+      .add_pts(
+        dplyr::filter(yf, plotting_group == g),           # <-- matches treatment_id, etc.
+        col = base::paste0(col_map[g], "FF"),
+        bg  = base::paste0(col_map[g], "CC"),
+        pch = sym_map[g],
+        size = 2.4
+      )
+    }
+  } else {
+    .add_pts(yf,
+      col = base::paste0(as.character(primary_color), "FF"),
+      bg  = base::paste0(as.character(primary_color), "CC"),
+      pch = 16, size = 2.4
+    )
+  }
+}
+
+# Legend (producer groups first, then one "Other Fields")
+if (length(producer_groups)) {
+  casoils::add_legend(
+    legend = c(names(sym_map), "Other Fields"),
+    color  = c(unname(col_map), as.character(other_color)),
+    pt.bg  = c(base::paste0(unname(col_map), "CC"),
+               base::paste0(as.character(other_color), "99")),
+    pch    = c(unname(sym_map), 21),
+    size   = c(rep(2.4, length(sym_map)), 1.36),
+    vertical_spacing = 1.5
+  )
+} else {
+  casoils::add_legend(
+    legend = c("Your Fields", "Other Fields"),
+    color  = c(as.character(primary_color), as.character(other_color)),
+    pt.bg  = c(base::paste0(as.character(primary_color), "CC"),
+               base::paste0(as.character(other_color), "99")),
+    pch    = c(16, 21),
+    size   = c(2.4, 1.36),
+    vertical_spacing = 1.5
+  )
+}
+
+invisible(dev.off())
+if (requireNamespace("magick", quietly = TRUE)) {
+  tt <- magick::image_read(file.path(path, "texture-triangle.png"))
+  tt <- magick::image_trim(tt)
+  magick::image_write(tt, file.path(path, "texture-triangle.png"))
+}
+
+# Add these 3 lines so the figure actually appears in the doc
+texture_png <- file.path(path, "texture-triangle.png")
+if (file.exists(texture_png)) {
+  knitr::include_graphics(texture_png)
+}
+```
+
+```{r make-strip-plots}
+# Normalize categories once
+df_plot <- df_plot |>
+  dplyr::mutate(
+    category = dplyr::case_when(
+      category %in% c("Your fields", "Your Fields") ~ "Your Fields",
+      category %in% c("Other fields", "Other Fields") ~ "Other Fields",
+      TRUE ~ as.character(category)
+    ),
+    category = factor(category, levels = c("Your Fields", "Other Fields"))
+  )
+
+# Tidy long titles if needed
+df_plot$abbr_unit <- dplyr::recode(df_plot$abbr_unit,
+  "Aggregate Stability Index*<br>" = "Aggregate Stability<br>Index*<br>"
+)
+
+# Precompute producer groups and shared symbol/color maps
+producer_groups <- if (!is.null(params$grouping_var) &&
+                        params$grouping_var %in% names(producer_samples)) {
+  unique(na.omit(producer_samples[[params$grouping_var]]))
+} else character(0)
+
+group_symbols <- c(22, 24, 23, 25, 21, 15, 16, 17)
+group_colors  <- c(primary_color, "#023B2C", "#8B4513", "#4B0082",
+                   "#FF6B35", "#2E8B57", "#9370DB", "#FFD700")
+
+sym_map <- stats::setNames(group_symbols[seq_along(producer_groups)], producer_groups)
+col_map <- stats::setNames(group_colors [seq_along(producer_groups)], producer_groups)
+
+# One strip plot per measurement group
+plot_list <- df_plot |>
+  split(df_plot$measurement_group) |>
+  purrr::map(\(group) {
+    if (!is.null(params$grouping_var) &&
+        params$grouping_var != "" &&
+        params$grouping_var %in% names(group)) {
+
+      # Collapse non-producer groups to "Other Fields" for aesthetics/legend
+      pg <- producer_groups
+      group <- group |>
+        dplyr::mutate(
+          !!params$grouping_var := ifelse(.data[[params$grouping_var]] %in% pg,
+                                          .data[[params$grouping_var]],
+                                          "Other Fields")
+        )
+
+      legend_levels <- c(pg, "Other Fields")
+      group[[params$grouping_var]] <- factor(group[[params$grouping_var]],
+                                             levels = legend_levels)
+
+      p <- casoils::make_strip_plot(
+        group,
+        id = sample_id,
+        color = .data[[params$grouping_var]],
+        fill  = .data[[params$grouping_var]],
+        size  = .data[[params$grouping_var]],
+        shape = .data[[params$grouping_var]],
+        alpha = .data[[params$grouping_var]],
+        language = "English"
+      )
+
+      # Lock styles & order to shared maps
+      p <- casoils::set_dynamic_scales(
+        p, group, params$grouping_var, producer_groups,
+        primary_color = primary_color, other_color = other_color
+      ) +
+        scale_color_manual(
+          values = c(col_map, "Other Fields" = as.character(other_color)),
+          limits = legend_levels
+        ) +
+        scale_fill_manual(
+          values = c(stats::setNames(base::paste0(unname(col_map), "CC"), names(col_map)),
+                     "Other Fields" = base::paste0(as.character(other_color), "99")),
+          limits = legend_levels
+        ) +
+        scale_shape_manual(
+          values = c(sym_map, "Other Fields" = 21),
+          limits = legend_levels
+        ) +
+        scale_size_manual(
+          values = stats::setNames(rep(2.5, length(legend_levels)), legend_levels),
+          limits = legend_levels
+        ) +
+        scale_alpha_manual(
+          values = stats::setNames(c(rep(1, length(pg)), 0.8), legend_levels),
+          limits = legend_levels
+        )
+
+    } else {
+      # No grouping var chosen → two-level legend
+      legend_levels <- c("Your Fields", "Other Fields")
+      p <- casoils::make_strip_plot(
+        group,
+        id = sample_id,
+        color = plotting_group,
+        fill  = plotting_group,
+        size  = plotting_group,
+        shape = plotting_group,
+        alpha = plotting_group,
+        language = "English"
+      ) +
+        scale_shape_manual(values = c("Your Fields" = 16, "Other Fields" = 16),
+                           limits = legend_levels) +
+        scale_colour_manual(values = c("Your Fields" = as.character(primary_color),
+                                       "Other Fields" = as.character(other_color)),
+                            limits = legend_levels) +
+        scale_fill_manual(values   = c("Your Fields" = base::paste0(as.character(primary_color), "CC"),
+                                       "Other Fields" = base::paste0(as.character(other_color), "99")),
+                          limits = legend_levels) +
+        scale_alpha_manual(values  = c("Your Fields" = 1, "Other Fields" = 0.8),
+                           limits = legend_levels) +
+        scale_size_manual(values   = c("Your Fields" = 2.5, "Other Fields" = 2.5),
+                          limits = legend_levels)
+    }
+
+    p + casoils::theme_facet_strip(
+      body_font = body_font,
+      strip_color = strip_color,
+      strip_text_color = strip_text_color
+    )
+  })
+```
+
+## `r producer$farm_name`
+
+{{< include 03_project-summary.qmd >}}
+
+## Your Fields
+
+```{r}
+# do not add chunk label due to bug
+# https://github.com/quarto-dev/quarto-cli/issues/3603
+
+# Use the selected grouping variable for the table header
+table_header <- if (!is.null(params$grouping_var)) {
+  if (params$grouping_var == "treatment_id") {
+    "Treatment ID"
+  } else if (params$grouping_var == "field_id") {
+    "Field ID"
+  } else {
+    stringr::str_to_title(gsub("_", " ", params$grouping_var))
+  }
+} else {
+  "Sample ID"
+}
+
+gis_ft <- gis_df |>
+  dplyr::select(
+    !!table_header := .data[[label_col]],
+    Longitude = longitude,
+    Latitude = latitude
+  )
+
+# If Crop exists and has any NAs, drop it from the printed table
+if ("Crop" %in% names(gis_ft) && any(is.na(gis_ft$Crop))) {
+  gis_ft <- gis_df |>
+    dplyr::select(-Crop)
+}
+
+# If longitude/latitude have any NAs, drop those columns from the printed table
+if (any(is.na(gis_ft$Longitude)) || any(is.na(gis_ft$Latitude))) {
+  cols_keep <- setdiff(names(gis_ft), c("Longitude", "Latitude"))
+  gis_ft <- gis_ft[, cols_keep, drop = FALSE]
+}
+
+gis_ft |>
+  flextable::flextable() |>
+  casoils::style_ft(header_font = header_font, body_font = body_font) |>
+  flextable::set_table_properties(layout = "autofit")
+```
+
+<!-- The below "\" is a hard line break that works for html and docx. -->
+
+\
+
+```{r html-map}
+#| eval: !expr out_type == "html"
+
+# Render interactive map only when we have complete coords + package available
+has_coords <- ("longitude" %in% names(gis_df)) && ("latitude" %in% names(gis_df)) &&
+              all(!is.na(gis_df$longitude)) && all(!is.na(gis_df$latitude))
+
+if (has_coords && requireNamespace("leaflet", quietly = TRUE)) {
+  casoils::make_leaflet(
+    gis_df,
+    primary_color = primary_color
+  )
+}
+```
+
+```{r static-map}
+#| eval: !expr out_type == "docx"
+#| out-width: 6in
+
+# Static map only when coords present AND required packages are available
+pk_ok <- all(c(
+  requireNamespace("sf", quietly = TRUE),
+  requireNamespace("maptiles", quietly = TRUE),
+  requireNamespace("tidyterra", quietly = TRUE),
+  requireNamespace("ggrepel", quietly = TRUE)
+))
+
+has_coords <- ("longitude" %in% names(gis_df)) && ("latitude" %in% names(gis_df)) &&
+              all(!is.na(gis_df$longitude)) && all(!is.na(gis_df$latitude))
+
+if (pk_ok && has_coords) {
+  df_sf <- sf::st_as_sf(
+    gis_df,
+    coords = c("longitude", "latitude"),
+    crs = 4326
+  ) |> sf::st_transform(3857)
+
+  df_sf_buffered <- sf::st_buffer(df_sf, dist = 1000)
+  buffered_bbox <- sf::st_bbox(df_sf_buffered)
+
+  basetiles <- maptiles::get_tiles(
+    df_sf_buffered,
+    provider = "Esri.WorldImagery",
+    cachedir = tempdir(),
+    retina = TRUE
+  )
+
+  map <- ggplot2::ggplot(df_sf) +
+    tidyterra::geom_spatraster_rgb(data = basetiles) +
+    ggplot2::geom_sf(color = primary_color, size = 3) +
+    ggrepel::geom_label_repel(
+      ggplot2::aes(label = .data[[label_col]], geometry = geometry),
+      stat = "sf_coordinates",
+      family = body_font,
+      size = 3,
+      point.padding = 2,
+      min.segment.length = 0
+    ) +
+    ggplot2::coord_sf(
+      crs = 3857,
+      xlim = c(buffered_bbox["xmin"], buffered_bbox["xmax"]),
+      ylim = c(buffered_bbox["ymin"], buffered_bbox["ymax"])
+    ) +
+    ggplot2::theme_void()
+
+  print(map)
+  ggplot2::ggsave(glue::glue("{path}/map.png"), map, dpi = 300)
+}
+```
+
+{{< pagebreak >}}
+
+## Project Results
+
+For the project we took soil samples from your selected fields using the grouping variable "{{ params$grouping_var }}". You can see the GPS locations of your fields above. The other data included in this report are from other fields in the project for comparison.
+
+<!-- VMW Note that you'll need to change "orchards" to "annual fields" for Sarah's sites-->
+
+The results below are organized into tables and graphs describing the physical, chemical, carbon, and biological measurements from your soils. Each point represents an average of the five samples we collected from each field. All samples that were sent to the lab were collected from 0-6 inches depth, while in-field soil measurements were collected from a 6-8 inch hole. ***All in-field indicators are marked with an asterisk (*).***
+
+```{r create-measurement-group-sections}
+#| output: asis
+
+# DO NOT RUN THIS CHUNK INTERACTIVELY. See
+# https://wa-department-of-agriculture.github.io/soils/articles/troubleshoot.html#error-when-run-interactively.
+
+# If the report fails to render at this chunk, interactively run all chunks
+# above this one, open `02_section-template.qmd`, uncomment the first
+# troubleshoot chunk, and then run each chunk in the file interactively to
+# debug.
+
+# Add section for each measurement group containing a header, texture triangle
+# (for the physical group), table, and plot.
+sections <- purrr::map_chr(measurement_groups, \(group) {
+  knitr::knit_child(
+    input = "02_section-template.qmd",
+    envir = environment(),
+    quiet = TRUE
+  )
+})
+
+cat(sections, sep = "\n")
+```
+
+```{r download-data-text}
+#| eval: !expr out_type == "html"
+#| output: asis
+
+# Add a download section if downloadthis is installed
+if (requireNamespace("downloadthis", quietly = TRUE)) {
+  cat("## Download your data")
+}
+```
+
+```{r download-data}
+#| eval: !expr out_type == "html"
+
+# Add a data download button if downloadthis is installed
+if (requireNamespace("downloadthis", quietly = TRUE)) {
+  list(
+    results = dplyr::filter(data, producer_id == params$producer_id),
+    measurement_dictionary = dictionary[
+      ,
+      c(
+        "column_name",
+        "abbr",
+        "unit"
+      )
+    ]
+  ) |>
+    downloadthis::download_this(
+      output_name = glue::glue("{params$year}-soils-data"),
+      output_extension = ".xlsx",
+      button_label = "Download as Excel spreadsheet",
+      button_type = "success"
+    )
+}
+```
+
+## Looking Forward
+
+{{< include 08_looking-forward.qmd >}}
+
+<!-- Please do not remove the acknowledgement. -->
+
+## Acknowledgement
+
+{{< include 09_acknowledgement.qmd >}}
+
+{{< pagebreak >}}
+
+## Indicator Reference List
+{{< include 04_soil-health-background.qmd >}}

@@ -1,0 +1,24 @@
+## [**Biological**]{style="color: #335c67"} ![](images/biological.png){height="50px"}\newline\newline
+
+***Total Microbial Biomass*** is a measure of the total microbial community in the soil. Microbial biomass is a combination of bacteria, fungi, protozoa, and undifferentiated microbes, and forms a relatively small portion of the organic matter in soil. Despite being a small part of the soil, microbes are important indicators of soil functioning and nutrient cycling potential. Apart from nitrate fertilizer, most N that plants are able to use is first cycled through the microbial biomass in soil, i.e., that microbes ingest organic N and then when they die, that N is released into the soil in mineral form. Microbial biomass was measured via PLFA (phospholipid fatty acid) analysis, which entails extracting the phospholipids from soil, converting them to fatty acid methyl esters (FAMEs), and then analyzing them using gas chromatography.
+
+***Bacterial Biomass*** is a measure of the amount of bacteria in soil. Bacteria are the basis of the microbial food web and they process most of the nutrients in soil. Bacteria tend to be the most dominant type of microbe in agricultural soils, and their abundance can vary widely at different time points in the year. This indicator was measured via PLFA, as described for Microbial Biomass (above).
+
+***Fungal Biomass*** is a measure of the amount of fungi in soil. High fungal biomass, including arbuscular mycorrhizae (AM), is often an indicator of soil health, because fungi bind together soil particles, process nutrients, and can help soils be resilient to stress. Fungi will generally be less abundant than bacteria in agricultural soils.
+
+***Fungi:Bacteria*** is the ratio of bacteria and fungi biomass in soil. While bacteria usually dominate in agricultural soils, a high ratio of fungi to bacteria is assumed by some to reflect greater soil health.
+
+This indicator is calculated from Bacteria and Fungi biomass, which are measured via PLFA, as described for Microbial Biomass (above).
+
+***Protozoan Biomass*** is a measure of the biomass of microbes in soil that are protozoa. Protozoa feed on bacteria and in the process, release nutrients into the soil. Their presence indicates that there are sufficient nutrient levels to support multiple levels of the soil food web. This indicator was measured via PLFA, as described for Microbial Biomass (above).
+
+***Undifferentiated Microbial Biomass*** is a measure of the microbial biomass in soil that cannot be identified as one of the main three types of microbes (bacteria, fungi, protozoa). This pool is an important part of microbial biomass. This indicator was measured via PLFA, as described for Microbial Biomass (above).
+
+***Biopores*** are the large and small holes left in soil by plant roots and soil organisms. Biopores are important for rapid air and water exchange and provide additional access to water and nutrients for new plant roots. Additionally, earthworm channels tend to be enriched with organic matter, microbes and nutrients. Biopores indicate both biological soil activity and also adequate soil structure.
+This indicator was measured using a golf ball sized aggregate of soil that was visually inspected to determine the number of biopores present.
+
+***Visible Biodiversity*** is a count of the visible soil organisms in a shovelful of soil. Examples of observed organisms include earthworms, mites, springtails, millipedes, roundworms, beetles, ants, pill bugs, earwigs, and spiders. Soil organisms are important because they broadly influence all aspects of soil function including but not limited to aggregation, water dynamics, nutrient cycling, and pest suppression. Visible soil organisms also indicate the presence of small microorganisms within the soil food web.
+
+This indicator was measured by digging a ~6-8 inch hole and then counting the number of different species in the dug up soil, as well as how many of each there were.
+
+

@@ -1,0 +1,90 @@
+
+```{r echo=FALSE}
+# qualities <- data.frame(
+#   "Qualities of a Healthy Agricultural Soil" = c(
+#     "•   Good soil tilth allows roots to penetrate",
+#     "•   Near neutral pH (6 - 8) maximizes nutrient availability for most crops",
+#     "•   Near neutral pH also minimizes Al and Mn toxicity",
+#     "•   Sufficient — but not excessive — nutrient supply for crop growth",
+#     "•   Small population of plant pathogens and pests",
+#     "•   Adequate soil drainage and infiltration",
+#     "•   Diverse and active microbial population",
+#     "•   Low weed seed bank",
+#     "•   No residual chemicals or toxins that may harm the crop, including salts",
+#     "•   Resistance to degradation such as from erosion or surface runoff"
+#   ),
+#   check.names = FALSE
+# )
+# 
+# flextable::flextable(qualities) |>
+#   flextable::color(
+#     color = header_text_color,
+#     part = "header"
+#   ) |>
+#   flextable::bg(
+#     bg = header_color,
+#     part = "header"
+#   ) |>
+#   flextable::vline_left(
+#     border = officer::fp_border(
+#       color = header_color,
+#       width = 3
+#     )
+#   ) |>
+#   flextable::vline_right(
+#     border = officer::fp_border(
+#       color = header_color,
+#       width = 1
+#     )
+#   ) |>
+#   flextable::hline_bottom(
+#     border = officer::fp_border(
+#       color = header_color,
+#       width = 1
+#     )
+#   ) |>
+#   flextable::bg(
+#     bg = lighter_color,
+#     part = "body"
+#   ) |>
+#   flextable::align(align = "left", part = "all") |>
+#   flextable::fontsize(size = 10) |>
+#   flextable::line_spacing(
+#     space = 1.5,
+#     part = "header"
+#   ) |>
+#   flextable::line_spacing(
+#     space = 1.1,
+#     part = "body"
+#   ) |>
+#   flextable::width(
+#     width = 6
+#   )
+```
+
+::: {.content-visible when-format="html"}
+::: panel-tabset
+{{< include 05_physical-measurements.qmd >}}
+
+{{< include 07_chemical-measurements.qmd >}}
+
+{{< include 10_carbon-measurements.qmd >}}
+
+{{< include 06_biological-measurements.qmd >}}
+
+:::
+:::
+
+::: {.content-visible unless-format="html"}
+{{< include 05_physical-measurements.qmd >}}
+
+{{< include 07_chemical-measurements.qmd >}}
+
+{{< include 10_carbon-measurements.qmd >}}
+
+{{< include 06_biological-measurements.qmd >}}
+
+:::
+
+<!-- {{< pagebreak >}} -->
+

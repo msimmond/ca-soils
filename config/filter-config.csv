@@ -1,0 +1,4 @@
+column_name,filter_label,filter_type,required
+site_type,Site Type,dropdown,FALSE
+crop,Crop,dropdown,FALSE
+texture,Texture,dropdown,TRUE

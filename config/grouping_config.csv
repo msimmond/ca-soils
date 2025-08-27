@@ -1,0 +1,5 @@
+column_name,grouping_label,grouping_type,description
+field_id,Field ID,dropdown,Group by different fields on the farm
+treatment_id,Treatment ID,dropdown,Group by different treatments or management practices
+block_id,Block ID,dropdown,Group by experimental blocks
+replicate_id,Replicate ID,dropdown,Group by experimental replicates 

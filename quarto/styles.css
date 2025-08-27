@@ -1,0 +1,43 @@
+/* Custom styles for soil health reports */
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Georgia, serif;
+  color: #a60f2d;
+}
+
+.btn-primary {
+  background-color: #a60f2d;
+  border-color: #a60f2d;
+}
+
+.btn-primary:hover {
+  background-color: #8a0d25;
+  border-color: #8a0d25;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.progress {
+  height: 20px;
+  margin: 10px 0;
+}
+
+.progress-bar {
+  background-color: #a60f2d;
+}

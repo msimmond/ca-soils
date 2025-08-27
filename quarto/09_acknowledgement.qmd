@@ -1,0 +1,10 @@
+This report was generated with the {casoils} R package, developed for UC Agriculture and Natural Resources (UCANR) and the California Farm Demonstration Network.
+
+{casoils} builds upon the {soils} package, created by the Washington State Department of Agriculture and Washington State University as part of the Washington Soil Health Initiative.
+
+---
+
+Special thanks to Peter Geoghan from the Gaudin Soil Agroecology Lab for sharing his adaptation of the WASHI code with us and answering questions about generating reports. Text describing the in-field indicators was adapted from the NRCS Cropland In-Field Soil Health Assessment Guide (Technical Note No. 450-06 Jan 2021).
+
+The soils collection and analysis for this report was supported by funds from the Climate Action Research Grants Program of the University of California, Grant # R02CP6986.
+

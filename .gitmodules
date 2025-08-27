@@ -1,0 +1,3 @@
+[submodule "ca-soils"]
+	path = ca-soils
+	url = https://github.com/msimmond/ca-soils.git

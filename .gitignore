@@ -1,0 +1,127 @@
+# ===============================
+# System files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# R specific
+# ===============================
+.Rhistory
+.RData
+.Ruserdata
+.Rapp.history
+.Rproj.user/
+*.Rproj
+
+# ===============================
+# renv (R package management)
+# Keep renv.lock, ignore caches
+# ===============================
+renv/library/
+renv/staging/
+# DO NOT ignore renv.lock (commit it)
+
+# ===============================
+# Generated / rendered files
+# ===============================
+*.html
+*.utf8.md
+*.knit.md
+*.nb.html
+figure-output/
+.quarto/
+_site/
+outputs/
+soil-health-shiny/outputs/
+
+# Allow a specific example render (if intentionally tracked)
+!01_producer-report.html
+
+# ===============================
+# Images & large binaries (global)
+# ===============================
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Keep app/web assets even though images are globally ignored
+!soil-health-shiny/www/images/
+!soil-health-shiny/www/images/**
+
+# Keep Quarto sources & styles
+!soil-health-shiny/quarto/
+!soil-health-shiny/quarto/**/*.qmd
+!soil-health-shiny/quarto/**/*.md
+!soil-health-shiny/quarto/styles.css
+# If shipping a Word template, unignore it:
+# !soil-health-shiny/quarto/template.docx
+
+# ===============================
+# Temporary files & logs
+# ===============================
+*.tmp
+*.temp
+*.log
+qmd_read_log.txt
+~$*.xlsx
+
+# ===============================
+# IDE / Editor settings
+# ===============================
+.vscode/
+.idea/
+
+# ===============================
+# Shiny runtime/deploy artifacts
+# ===============================
+shinyapps/
+rsconnect/
+
+# ===============================
+# Python / Conda (if present)
+# ===============================
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.local
+.envrc
+.python-version
+
+# ===============================
+# Project-specific local dirs
+# ===============================
+library/
+local/
+cellar/
+sandbox/
+staging/
+organic-think-tank-reports/
+dirt-data-reports/
+ca-soils/
+
+# ===============================
+# Local scripts (not for CI/CD)
+# ===============================
+run-app.sh
+restore-app-env.sh
+
+# ===============================
+# Data: ignore raw/local CSVs
+# keep only example/templates
+# ===============================
+data/*.csv
+soil-health-shiny/data/*.csv
+!soil-health-shiny/data/data-template.csv
+!soil-health-shiny/data/data-dictionary-template.csv
+!soil-health-shiny/data/instructions-template.csv
+# If you want to ship a demo dataset, unignore it explicitly:
+# !soil-health-shiny/data/washi-data.csv
+
+# ===============================
+# Local env / credentials
+# ===============================
+.Renviron
+.httr-oauth

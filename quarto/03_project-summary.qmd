@@ -1,0 +1,56 @@
+Thank you for being a participant in our California Farm Demonstration Network assessment of soil health indicators. This work would not be possible without your collaboration and input.
+Our goal is to refine what tools are useful to track soil functions, compare the results from in-field and lab testing methods, and understand which tests respond to management differences. At the end of this study, we plan to have the following outputs:
+
+**1)** A list of recommended in-field soil health assessment tools for farmers in California. 
+
+**2)** The results from in-field and lab assessments 
+
+**3)** A personalized report about your soil 
+
+**4)** The foundation of a soils database needed to develop benchmarks for regions across the state.
+
+::: {.content-visible unless-format="html"}
+![](images/pic1.png){height="3in"
+style="float:right"
+fig-alt="in-field data collection."}
+:::
+<!-- Image wrapped around text for HTML -->
+**Things to keep in mind with this report:**
+
+**1)** For each indicator, you will see two fields listed. These are the fields selected for comparison. 
+
+**2)** The soil results for each of your fields may not reflect the impacts of recent soil management changes. Using comparisons on your farm and taking tests over multiple years is the best way to track the long–term status of your soil.
+<!-- Image below around text for docx -->
+
+## Soil Health Indicators
+
+Soil health is a term that describes how well a soil ecosystem supports plants, animals, and humans. It also recognizes the living nature of soils and the importance of soil microorganisms. Healthy soils can provide wildlife habitat, support biodiversity, reduce the effects of climate change, filter air and water, increase crop productivity and food security, and ensure thriving rural economies.
+
+
+<!-- ## Soil Science 101 -->
+
+<!-- A crucial part of the soil health journey is measuring changes in your soil and understanding how to interpret those measurements. We can measure soil health with a range of indicators describing a soil’s physical, chemical, and biological properties, which can relate to important soil functions. Each indicator measures a different property of the soil and can be affected differently by management. -->
+
+<!-- To learn more about management practices that support healthy soil, check out -->
+<!-- these resources from the [Natural Resources Conservation Service (NRCS) -->
+<!-- principles of building soil -->
+<!-- health](https://www.nrcs.usda.gov/conservation-basics/natural-resource-concerns/soils/soil-health "NRCS principles of building soil health"). -->
+
+{{< include 11_indicator_table.qmd >}}
+
+### Qualities of a Healthy Agricultural Soil
+
+-   GOOD DRAINAGE, MINIMAL FLOODING: soil physical structure that allows water to move efficiently is key to healthy soil.
+-   RESISTANT TO DEGRADATION: related to good drainage, a healthy soil will have good aggregation that resists water and wind erosion and runoff.
+-   THRIVING SOIL LIFE: these include both micro- and macroorganisms in the soil which help to build healthy soil and require soil pore space and organic matter additions to thrive and facilitate nutrient cycling.
+-   NO RESIDUAL CHEMICALS: efficient nutrient cycling and avoiding the accumulation of toxins that could harm a crop, such as salts.
+-   HEALTHY, PRODUCTIVE CROPS: this is a result of the qualities listed above that support crop growth with minimal inputs and with minimal disease.
+
+```{r}
+
+
+#{{< include 04_soil-health-background.qmd >}} Commented out because including it later in the report for now
+
+```
+
+

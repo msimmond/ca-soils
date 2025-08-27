@@ -1,0 +1,30 @@
+## [**Chemical**]{style="color: #d4820a"} ![](images/chemical.png){height="50px"}\newline\newline
+
+***Soil pH*** measures how acidic (pH less than 7.0) or alkaline (pH greater than 7.0) the soil is. The pH level impacts the availability of plant nutrients as well as which microbial population can live in soil, which is important for nutrient cycling. Soil pH is impacted by inherent soil qualities such as age, mineralogy, and rainfall zone. It is also impacted by amendments, irrigation water pH, and SOM content. Most agricultural crops grow best in a pH range of 6 to 8. 
+
+In this assessment, pH was measured by mixing soil and DI water in a 1:1 or 1:2 ratio (depending on texture) and measured using a pH probe.
+
+***Cation Exchange Capacity*** (CEC) describes the soil’s ability to hold a slow-release reservoir of nutrients, as positively charged ions (e.g., NH4+, K+, Ca2+, Mg2+) in the soil are held by negatively charged sites on clay particles and SOM. While CEC is determined in part by soil texture, increasing SOM can greatly increase CEC. Sandy loam soils typically have CECs ranging from 1 to 10 meq/100 g, loam soils range from 5 to 15 meq/100 g, and clay soils have CECs greater than 30 meq/100 g. SOM can provide an additional 200 to 400 meq/100 g (note that CEC units may be reported differently, but 1 meq/100g = 1 cmolc/kg). Soil pH can also alter the CEC of organic matter and clay particles, further underscoring the impact of pH on other soil measurements.
+
+CEC was calculated in this assessment as the sum of the base cations Ca2+, Mg2+, and K+. Other assessments also include Na+, so this result may look different than the results from other labs.
+
+***Essential Plant Nutrients*** measures the concentration of macronutrients such as nitrogen (N), phosphorous (P), potassium (K), calcium (Ca), magnesium (Mg), and sulfur (S), and micronutrients (required in comparatively smaller amounts) such as iron (Fe), zinc (Zn), copper (C), boron (B), and manganese (Mn) in a soil solution. These elements are typically reported in parts per million (ppm), which is equivalent to milligrams per kilogram (1 ppm = 1 mg/kg). Each of these elements are required for crop production. The quantity, timing, placement, and source of each nutrient will vary depending on the crop. While many of these nutrients are inherent in the soil, some must be added. Careful consideration should be given to balancing and replenishing plant essential nutrients via soil health building practices and principles. More information on plant essential nutrients can be found in the Oregon State University Soil Test Interpretation Guide (available via online search).
+
+Essential plant nutrients were measured using the Mehlich 3 reagent, which is a chemical solution engineered to mimic how plants extract nutrients from the soil. The results are not indicative of the total pool of this nutrient in the soil, but rather a benchmark that can be used to calibrate fertilization and other management.
+
+***Total Nitrogen*** (TN) measures all the nitrogen in a soil sample, which includes both inorganic (nitrate and ammonium) and organic nitrogen. Most of the nitrogen is soil not immediately available for plant use, but rather, is the pool that is potentially available to microbes, who can cycle it within the soil and make it available to plants. Sufficient total nitrogen in the soil is key for promoting mineralization, the process of changing the organic nitrogen to a form. Total N is not used for fertilizer calculations, but can be used with Total Carbon to calculate the C:N ratio of the soil. Agricultural soils usually have an ideal C:N of 10:1. Higher C:N can lead to nutrient immobilization while lower C:N can lead to environmentally harmful N losses.
+
+In this assessment, TN was measured by dry combustion, in which a soil sample is heated to a high temperature (min. 950°F) in order to convert the inorganic and organic portions of the soil into gases which are captured and measured by an infrared (IR) detector.
+
+***Potentially Mineralizable Nitrogen*** (PMN) represents the amount of organic nitrogen that can be converted (or “mineralized”) to plant-available nitrate or ammonium. This measurement is taken from a laboratory incubation and can help producers estimate how much nitrogen may be released to crops during the growing season. Additional information on the measurement and interpretation of PMN can be found in the NRCS Soil Quality Indicator fact sheet on Potentially Mineralizable Nitrogen (available via online search).
+
+In this assessment, PMN was measured as the total mineral N in a soil solution after a 28-day aerobic incubation period. 
+
+***Soil nitrate*** is a measurement of the nitrogen in a soil solution that is in nitrate form. Nitrate is the most plant-available form of N and indicates immediate soil fertility. Excessive soil nitrate is a concern because nitrate is water-soluble and can pollute water waterways if it is not taken up by plants. Low nitrate concentration may indicate low soil fertility, or a tight nutrient cycle in which nutrients are taken up by plants or microbes at a similar rate to mineralization.
+
+In this assessment, nitrate was measured by a colorimetric determination after extraction from soil using a salt solution.
+
+***Nitrate Quick Test*** assess the concentration of plant-available nitrates in a soil solution. Nitrate is the main form of nitrogen that plants use (the others are ammonium and small organic N compounds) and measuring concentrations in topsoil can provide useful real-time information about field fertility status.
+
+In this assessment we measured nitrate by a field soil with a dilute CaCl solution in a 1:4 ratio, then shaking for 2 minutes, allowing it to settle for 2-5 minutes, and then dipping a test strip into the liquid and comparing the color development to the guide on the text strip bottle.
+
