@@ -28,7 +28,7 @@ format:
     toc-location: left
     link-external-newwindow: true
     embed-resources: true
-    css: www/css/styles.css
+    css: resources/styles.css
   docx:
     reference-doc: inst/templates/report_template.docx
 format-links: false
@@ -67,20 +67,7 @@ producer_id <- params$producer_id
 year        <- params$year
 grouping    <- params$grouping_var
 
-# DEBUG: log every read.csv and utils::read.csv call
-if (interactive() || TRUE) {
-  # mask unqualified calls
-  read.csv <- function(file, ...) {
-    message("DEBUG read.csv -> ", normalizePath(file, winslash = "/", mustWork = FALSE))
-    utils::read.csv(file, ...)
-  }
-  # trace namespace-qualified calls
-  if (requireNamespace("utils", quietly = TRUE)) {
-    try(trace(utils::read.csv,
-              quote(message("TRACE utils::read.csv -> ", normalizePath(file, winslash = "/", mustWork = FALSE))),
-              print = FALSE), silent = TRUE)
-  }
-}
+# Debug wrapper removed for production
 
 # Sanity checks to fail fast with a clear message
 stopifnot(!is.null(cfg), !is.null(data_path), !is.null(producer_id), !is.null(year))
@@ -109,11 +96,11 @@ file_ext <- tools::file_ext(params$data_path)
 if (file_ext %in% c("xlsx", "xls")) {
   # For Excel files, check available sheets and use the data sheet
   sheets <- readxl::excel_sheets(params$data_path)
-  message("Available sheets: ", paste(sheets, collapse = ", "))
+  # Available sheets: removed debug message
   
   # Use second sheet if multiple sheets exist (first is usually instructions)
   data_sheet <- if (length(sheets) >= 2) sheets[2] else sheets[1]
-  message("Using data sheet: ", data_sheet)
+  # Using data sheet: removed debug message
   
   data <- readxl::read_excel(params$data_path, sheet = data_sheet) |> as.data.frame()
 } else {
@@ -157,7 +144,7 @@ if (file_ext %in% c("xlsx", "xls")) {
   sheets <- readxl::excel_sheets(params$data_path)
   if ("Data Dictionary" %in% sheets) {
     dictionary <- readxl::read_excel(params$data_path, sheet = "Data Dictionary") |> as.data.frame()
-    message("Loaded dictionary from 'Data Dictionary' sheet")
+    # Loaded dictionary from 'Data Dictionary' sheet
   } else {
     stop("Excel file must contain a 'Data Dictionary' sheet. Available sheets: ", 
          paste(sheets, collapse = ", "))
@@ -170,7 +157,7 @@ if (file_ext %in% c("xlsx", "xls")) {
   } else {
     dictionary <- attr(data, "measurement_info")
     if (is.null(dictionary)) {
-      message("Dictionary attribute not found on data; falling back to file…")
+      # Dictionary attribute not found on data; falling back to file
       # Prefer an explicit path from config if you have it
       dict_path <- tryCatch(
         cfg$paths$data_dictionary,
@@ -274,7 +261,7 @@ strip_text_color <- "white"
 # Tidy data into long format and join with data dictionary
 # Only pivot columns that are in the data dictionary (measurements), excluding texture
 measurement_cols <- dictionary$column_name[dictionary$column_name %in% names(data) & dictionary$column_name != "texture"]
-cat("Debug - Measurement columns to pivot:", paste(measurement_cols, collapse = ", "), "\n")
+# Debug - Measurement columns to pivot: removed for production
 
 results_long <- data |>
   dplyr::mutate(
@@ -331,10 +318,7 @@ producer_samples <- results_long |>
 
 # Abort if there are no producer samples
 if (nrow(producer_samples) == 0) {
-  cat("Debug - No producer samples found. Available producers:", unique(results_long$producer_id), "\n")
-  cat("Debug - Looking for:", params$producer_id, "\n")
-  cat("Debug - Available years:", unique(results_long$year), "\n")
-  cat("Debug - Looking for year:", params$year, "\n")
+      # Debug - No producer samples found. Available producers: removed for production
   # Temporarily comment out the error to see what happens
   # cli::cli_abort(c(
   #   "i" = "Update {.code params} in YAML to a valid {.code producer_id} and\
@@ -392,9 +376,7 @@ gis_df <- casoils::prep_for_map(
 ```{r calculate-averages}
 # Calculate averages by the selected grouping variable
 # Handle cases where grouping_var might be NULL or not exist in data
-cat("Debug - grouping_var value:", params$grouping_var, "\n")
-cat("Debug - grouping_var class:", class(params$grouping_var), "\n")
-cat("Debug - grouping_var in names:", params$grouping_var %in% names(producer_samples), "\n")
+# Debug - grouping_var info: removed for production
 
 if (!is.null(params$grouping_var) && params$grouping_var != "" && params$grouping_var %in% names(producer_samples)) {
   grower_summary <- producer_samples |>
@@ -720,15 +702,23 @@ make_tt <- nrow(producer_texture) > 0 &&
            all(c("sand","silt","clay") %in% names(producer_texture)) &&
            any(stats::complete.cases(producer_texture[, c("sand","silt","clay")]))
 
-# Debug: print a tiny sample right before plotting
-if (exists("agg")) {
-  print(head(agg, 10))
-  print(table(agg$category, agg$plotting_group, useNA="ifany"))
-}
+  # Debug prints removed for production
 ```
 
-```{r make-texture-triangle, fig.cap="Soil texture triangle", out.width="100%", fig.align="center", message=TRUE}
-ragg::agg_png(file.path(path, "texture-triangle.png"), res = 150, width = 1500, height = 1000, scaling = 1)
+```{r make-texture-triangle, echo=FALSE, message=FALSE, warning=FALSE}
+# Render and save the PNG
+#png_path <- file.path(path, "texture-triangle.png")
+#ragg::agg_png(png_path, res = 150, width = 1500, height = 1000, scaling = 1)
+
+ragg::agg_png(
+  "figure-output/texture-triangle.png",
+  res = 150,
+ # width = 1200,
+  width = 1500,
+  height = 1000,
+  scaling = 1
+)
+
 casoils::make_texture_triangle(body_font = body_font)
 
 .add_pts <- function(df, col, bg, pch, size) {
@@ -741,59 +731,57 @@ casoils::make_texture_triangle(body_font = body_font)
   }
 }
 
-# Which producer groups exist this year (values of the chosen grouping var)
-producer_groups <- if (!is.null(params$grouping_var) &&
-                        params$grouping_var %in% names(producer_samples)) {
+# Symbol/color maps
+producer_groups <- if (!is.null(params$grouping_var) && params$grouping_var %in% names(producer_samples)) {
   unique(na.omit(producer_samples[[params$grouping_var]]))
 } else character(0)
 
-# Symbol/color maps reused across figures
 group_symbols <- c(22, 24, 23, 25, 21, 15, 16, 17)
 group_colors  <- c(primary_color, "#023B2C", "#8B4513", "#4B0082",
                    "#FF6B35", "#2E8B57", "#9370DB", "#FFD700")
 sym_map <- stats::setNames(group_symbols[seq_along(producer_groups)], producer_groups)
 col_map <- stats::setNames(group_colors [seq_along(producer_groups)], producer_groups)
 
-# 1) All Other fields points (now one point per other producer+year+grouping var)
+# Other fields
 if (!is.null(texture_list$`Other Fields`)) {
   .add_pts(
     texture_list$`Other Fields`,
-    col = base::paste0(as.character(other_color), "CC"),
-    bg  = base::paste0(as.character(other_color), "99"),
+    col = paste0(as.character(other_color), "CC"),
+    bg  = paste0(as.character(other_color), "99"),
     pch = 21,
     size = 1.36
   )
 }
 
-# 2) Your fields, one symbol/color per producer group value
+# Your fields
 if (!is.null(texture_list$`Your Fields`)) {
   yf <- texture_list$`Your Fields`
   if (length(producer_groups)) {
     for (g in names(sym_map)) {
       .add_pts(
-        dplyr::filter(yf, plotting_group == g),           # <-- matches treatment_id, etc.
-        col = base::paste0(col_map[g], "FF"),
-        bg  = base::paste0(col_map[g], "CC"),
+        dplyr::filter(yf, plotting_group == g),
+        col = paste0(col_map[g], "FF"),
+        bg  = paste0(col_map[g], "CC"),
         pch = sym_map[g],
         size = 2.4
       )
     }
   } else {
     .add_pts(yf,
-      col = base::paste0(as.character(primary_color), "FF"),
-      bg  = base::paste0(as.character(primary_color), "CC"),
+      col = paste0(as.character(primary_color), "FF"),
+      bg  = paste0(as.character(primary_color), "CC"),
       pch = 16, size = 2.4
     )
   }
 }
 
-# Legend (producer groups first, then one "Other Fields")
+# Legend
 if (length(producer_groups)) {
   casoils::add_legend(
     legend = c(names(sym_map), "Other Fields"),
     color  = c(unname(col_map), as.character(other_color)),
-    pt.bg  = c(base::paste0(unname(col_map), "CC"),
-               base::paste0(as.character(other_color), "99")),
+    pt.bg  = c(paste0(unname(col_map), "CC"),
+               paste0(as.character(other_color), "99")),
     pch    = c(unname(sym_map), 21),
     size   = c(rep(2.4, length(sym_map)), 1.36),
     vertical_spacing = 1.5
@@ -802,8 +790,8 @@ if (length(producer_groups)) {
   casoils::add_legend(
     legend = c("Your Fields", "Other Fields"),
     color  = c(as.character(primary_color), as.character(other_color)),
-    pt.bg  = c(base::paste0(as.character(primary_color), "CC"),
-               base::paste0(as.character(other_color), "99")),
+    pt.bg  = c(paste0(as.character(primary_color), "CC"),
+               paste0(as.character(other_color), "99")),
     pch    = c(16, 21),
     size   = c(2.4, 1.36),
     vertical_spacing = 1.5
@@ -811,17 +799,18 @@ if (length(producer_groups)) {
 }
 
 invisible(dev.off())
+
+# Optional trim
 if (requireNamespace("magick", quietly = TRUE)) {
-  tt <- magick::image_read(file.path(path, "texture-triangle.png"))
+  tt <- magick::image_read("figure-output/texture-triangle.png")
   tt <- magick::image_trim(tt)
-  magick::image_write(tt, file.path(path, "texture-triangle.png"))
+  magick::image_write(tt, "figure-output/texture-triangle.png")
 }
 
-# Add these 3 lines so the figure actually appears in the doc
-texture_png <- file.path(path, "texture-triangle.png")
-if (file.exists(texture_png)) {
-  knitr::include_graphics(texture_png)
-}
+# pass absolute path to child
+#texture_png <- normalizePath(png_path, winslash = "/", mustWork = TRUE)
+
+
 ```
 
 ```{r make-strip-plots}
@@ -1102,7 +1091,6 @@ sections <- purrr::map_chr(measurement_groups, \(group) {
 })
 
 cat(sections, sep = "\n")
-```
 
 ```{r download-data-text}
 #| eval: !expr out_type == "html"
