@@ -164,6 +164,10 @@ generate_soil_health_report <- function(
   timestamp   <- format(Sys.time(), "%Y%m%d_%H%M%S")
   safe_prod   <- gsub("[^A-Za-z0-9_-]", "_", producer_id)
   output_file <- paste0("soil_health_report_", safe_prod, "_", year, "_", timestamp, ".html")
+  
+  # Create reports-rendered directory if it doesn't exist
+  reports_dir <- fs::path(output_dir_abs, "..", "reports-rendered")
+  fs::dir_create(reports_dir)
 
   message("Generating report for ", producer_id, " (", year, ")")
   message("Template path: ", template_abs)
@@ -175,7 +179,7 @@ generate_soil_health_report <- function(
       quarto::quarto_render(
         input          = template_abs,
         execute_params = execute_params,
-        output_file    = output_file,
+        output_file    = fs::path(reports_dir, output_file),
         quiet          = FALSE
       )
     },
@@ -185,7 +189,7 @@ generate_soil_health_report <- function(
   )
 
   # ---- Verify output + return ------------------------------------------------
-  output_path <- fs::path(output_dir_abs, output_file)
+  output_path <- fs::path(reports_dir, output_file)
   if (!fs::file_exists(output_path)) {
     stop("Report file not found after rendering: ", output_path)
   }
