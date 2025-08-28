@@ -31,6 +31,7 @@ format:
     css: resources/styles.css
   docx:
     reference-doc: inst/templates/report_template.docx
+output-dir: ../reports-rendered
 format-links: false
 fig-align: left
 fig-width: 6

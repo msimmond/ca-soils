@@ -34,6 +34,7 @@ figure-output/
 _site/
 outputs/
 soil-health-shiny/outputs/
+reports-rendered/
 
 # Allow a specific example render (if intentionally tracked)
 !01_producer-report.html
