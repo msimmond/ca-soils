@@ -163,11 +163,9 @@ generate_soil_health_report <- function(
 
   timestamp   <- format(Sys.time(), "%Y%m%d_%H%M%S")
   safe_prod   <- gsub("[^A-Za-z0-9_-]", "_", producer_id)
-  output_file <- paste0("soil_health_report_", safe_prod, "_", year, "_", timestamp, ".html")
+  output_file <- paste0("soil_health_report_", safe_prod, "_", year, "_", timestamp)
   
-  # Create reports-rendered directory if it doesn't exist
-  reports_dir <- fs::path(output_dir_abs, "..", "reports-rendered")
-  fs::dir_create(reports_dir)
+  # Reports will save to the same directory as the template (quarto/)
 
   message("Generating report for ", producer_id, " (", year, ")")
   message("Template path: ", template_abs)
@@ -179,7 +177,7 @@ generate_soil_health_report <- function(
       quarto::quarto_render(
         input          = template_abs,
         execute_params = execute_params,
-        output_file    = fs::path(reports_dir, output_file),
+        output_file    = output_file,
         quiet          = FALSE
       )
     },
@@ -189,13 +187,24 @@ generate_soil_health_report <- function(
   )
 
   # ---- Verify output + return ------------------------------------------------
-  output_path <- fs::path(reports_dir, output_file)
-  if (!fs::file_exists(output_path)) {
-    stop("Report file not found after rendering: ", output_path)
+  # Reports are saved in the same directory as the template (quarto/)
+  # Check for both HTML and DOCX files
+  html_path <- fs::path(fs::path_dir(template_abs), paste0(output_file, ".html"))
+  docx_path <- fs::path(fs::path_dir(template_abs), paste0(output_file, ".docx"))
+  
+  if (!fs::file_exists(html_path)) {
+    stop("HTML report file not found after rendering: ", html_path)
   }
-
-  message("✅ Report generated: ", output_path)
-  fs::path_abs(output_path)
+  
+  if (!fs::file_exists(docx_path)) {
+    stop("DOCX report file not found after rendering: ", docx_path)
+  }
+  
+  message("✅ HTML report generated: ", html_path)
+  message("✅ DOCX report generated: ", docx_path)
+  
+  # Return the HTML path as the primary output
+  fs::path_abs(html_path)
 }
 
 

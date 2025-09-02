@@ -88,16 +88,7 @@ mod_report_ui <- function(id) {
       h5("Generated Report"),
       verbatimTextOutput(ns("report_info")),
 
-      tags$hr(),
-      h5("Report Preview"),
-      div(style = "border: 1px solid #ddd; border-radius: 4px; padding: 10px;",
-          uiOutput(ns("report_preview"))),
-
-      tags$hr(),
-      h5("Download"),
-      div(class = "btn-group", role = "group",
-          downloadButton(ns("download_html"), "Download HTML", class = "btn-primary"),
-          downloadButton(ns("download_pdf"),  "Download PDF",  class = "btn-secondary"))
+      # Report preview and download buttons removed - not needed
     ),
 
     conditionalPanel(
@@ -299,54 +290,36 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
 
     output$report_info <- renderPrint({
       res <- report_result(); req(res$status == "success")
+      
+      # Get the base filename without extension from the HTML path
+      html_path <- res$path
+      base_name <- tools::file_path_sans_ext(basename(html_path))
+      quarto_dir <- dirname(html_path)
+      
+      # Construct paths for both files
+      html_file <- basename(html_path)
+      docx_file <- paste0(base_name, ".docx")
+      docx_path <- file.path(quarto_dir, docx_file)
+      
       cat("Report Information:\n")
-      cat("File:", basename(res$path), "\n")
-      cat("Size:", file.size(res$path), "bytes\n")
-      cat("Generated:", format(file.info(res$path)$mtime), "\n")
+      cat("HTML File:", html_file, "\n")
+      cat("HTML Size:", file.size(html_path), "bytes\n")
+      cat("DOCX File:", docx_file, "\n")
+      if (file.exists(docx_path)) {
+        cat("DOCX Size:", file.size(docx_path), "bytes\n")
+      } else {
+        cat("DOCX Size: File not found\n")
+      }
+      cat("Generated:", format(file.info(html_path)$mtime), "\n")
     })
 
-    output$report_preview <- renderUI({
-      res <- report_result(); req(res$status == "success")
-      rel <- paste0("reports/", basename(res$path))
-      tags$iframe(src = rel, width = "100%", height = "600px",
-                  frameborder = "0", style = "border: 1px solid #ddd;")
-    })
+    # Report preview removed - not needed
 
     output$error_text <- renderText({
       res <- report_result(); req(res$status == "error")
       res$error
     })
 
-    # --------------------------
-    # Downloads
-    # --------------------------
-    output$download_html <- downloadHandler(
-      filename = function() {
-        res <- report_result(); req(res$status == "success")
-        basename(res$path)
-      },
-      content = function(file) {
-        res <- report_result(); req(res$status == "success")
-        file.copy(res$path, file)
-      }
-    )
-
-    output$download_pdf <- downloadHandler(
-      filename = function() {
-        paste0("soil_health_report_", state$selected_producer, "_", state$selected_year, ".pdf")
-      },
-      content = function(file) {
-        res <- report_result(); req(res$status == "success")
-        if (nzchar(Sys.which("pandoc"))) {
-          system2("pandoc", args = c(res$path, "-o", file, "--pdf-engine=wkhtmltopdf"))
-        } else {
-          file.copy(res$path, file)
-          showNotification(
-            "PDF conversion needs Pandoc + a PDF engine (e.g., wkhtmltopdf). Downloaded HTML instead.",
-            type = "warning"
-          )
-        }
-      }
-    )
+    # Download buttons removed - reports are already generated and saved locally
   })
 }

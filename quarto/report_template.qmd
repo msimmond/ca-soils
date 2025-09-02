@@ -28,7 +28,7 @@ format:
     toc-location: left
     link-external-newwindow: true
     embed-resources: true
-    css: resources/styles.css
+    css: styles.css
   docx:
     reference-doc: inst/templates/report_template.docx
 # output-dir: ../reports-rendered
