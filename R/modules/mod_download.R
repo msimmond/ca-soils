@@ -24,9 +24,9 @@
 # =============================================================================
 
 # ---------------------------
-# Upload Module UI
+# Download Module UI
 # ---------------------------
-mod_upload_ui <- function(id) {
+mod_download_ui <- function(id) {
   ns <- NS(id)
 
   tagList(
@@ -52,9 +52,9 @@ mod_upload_ui <- function(id) {
 }
 
 # ---------------------------
-# Upload Module Server
+# Download Module Server
 # ---------------------------
-mod_upload_server <- function(id, cfg, state) {
+mod_download_server <- function(id, cfg, state) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
