@@ -71,14 +71,15 @@ mod_report_ui <- function(id) {
           textOutput(ns("status_text")))
     ),
 
-    # progress flag is off; we use withProgress messages instead
+    # Progress bar for report generation
     conditionalPanel(
       condition = "output.show_progress",
       ns = ns,
       div(class = "progress",
           div(class = "progress-bar progress-bar-striped progress-bar-animated",
-              role = "progressbar", style = "width: 100%",
-              "Generating report..."))
+              role = "progressbar", 
+              style = paste0("width: ", output$progress_value, "%"),
+              paste0(output$progress_detail, " (", round(output$progress_value), "%)")))
     ),
 
     conditionalPanel(
@@ -185,6 +186,9 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
       cache = memoise::cache_memory()
     )
 
+    # Progress tracking reactive
+    progress_state <- reactiveVal(list(value = 0, detail = "Ready", status = "ready"))
+    
     # --------------------------
     # Button → render report
     # --------------------------
@@ -232,41 +236,60 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
         readr::write_csv(df, tmp_csv)
       }
 
-      withProgress(message = "Generating report...",
-                   detail  = paste("Producer:", producer, "Year:", year_chr),
-                   value   = 0, {
-        incProgress(0.35, detail = "Preparing inputs…")
-        res <- tryCatch({
-          incProgress(0.7, detail = "Rendering via Quarto…")
-          # Create hash for project info to include in memoization
-          project_info_hash <- if (!is.null(state$project_info)) {
-            if (requireNamespace("digest", quietly = TRUE)) {
-              digest::digest(state$project_info)
-            } else {
-              paste0("proj_", length(unlist(state$project_info)))
-            }
-          } else NULL
-          
-          out_path <- generate_report_memoized(
-            df_hash       = df_hash,
-            producer_id   = producer,
-            year_chr      = year_chr,
-            grouping_var  = grouping,
-            config_hash   = config_hash,
-            tmp_csv_path  = tmp_csv,
-            out_dir       = output_dir,
-            dict_path     = tmp_dict,
-            project_info_hash = project_info_hash
-          )
-          incProgress(1, detail = "Done")
-          list(status = "success", path = out_path, error = NULL)
-        }, error = function(e) {
-          list(status = "error", path = NULL, error = conditionMessage(e))
-        })
-        res
+      # Initialize progress state
+      progress_state(list(value = 0, detail = "Starting...", status = "generating"))
+      
+      # Update progress state
+      progress_state(list(value = 10, detail = "Validating data...", status = "generating"))
+      
+      # Create hash for project info to include in memoization
+      project_info_hash <- if (!is.null(state$project_info)) {
+        if (requireNamespace("digest", quietly = TRUE)) {
+          digest::digest(state$project_info)
+        } else {
+          paste0("proj_", length(unlist(state$project_info)))
+        }
+      } else NULL
+      
+      progress_state(list(value = 25, detail = "Writing temporary files...", status = "generating"))
+      
+      # Write CSV and dictionary files
+      if (!fs::file_exists(tmp_csv)) {
+        readr::write_csv(df, tmp_csv)
+      }
+      
+      progress_state(list(value = 40, detail = "Initializing Quarto...", status = "generating"))
+      
+      res <- tryCatch({
+        progress_state(list(value = 60, detail = "Rendering via Quarto...", status = "generating"))
+        
+        out_path <- generate_report_memoized(
+          df_hash       = df_hash,
+          producer_id   = producer,
+          year_chr      = year_chr,
+          grouping_var  = grouping,
+          config_hash   = config_hash,
+          tmp_csv_path  = tmp_csv,
+          out_dir       = output_dir,
+          dict_path     = tmp_dict,
+          project_info_hash = project_info_hash
+        )
+        
+        progress_state(list(value = 90, detail = "Finalizing report...", status = "generating"))
+        
+        # Reset progress state on success
+        progress_state(list(value = 100, detail = "Done!", status = "ready"))
+        list(status = "success", path = out_path, error = NULL)
+      }, error = function(e) {
+        progress_state(list(value = 0, detail = "Error occurred", status = "error"))
+        list(status = "error", path = NULL, error = conditionMessage(e))
       })
+      
+      res
     }, ignoreInit = TRUE)
 
+
+    
     # --------------------------
     # Reactive flags for UI
     # --------------------------
@@ -277,8 +300,16 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
     })
     outputOptions(output, "report_status", suspendWhenHidden = FALSE)
 
-    output$show_progress <- reactive({ FALSE })
+    output$show_progress <- reactive({ 
+      progress_state()$status == "generating"
+    })
     outputOptions(output, "show_progress", suspendWhenHidden = FALSE)
+    
+    output$progress_value <- reactive({ progress_state()$value })
+    outputOptions(output, "progress_value", suspendWhenHidden = FALSE)
+    
+    output$progress_detail <- reactive({ progress_state()$detail })
+    outputOptions(output, "progress_detail", suspendWhenHidden = FALSE)
 
     output$has_report <- reactive({
       !is.null(report_result()) && identical(report_result()$status, "success")
