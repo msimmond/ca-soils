@@ -2,12 +2,12 @@
 # app.R — Main Shiny Application Entry Point
 #
 # Purpose:
-#   - Define the top-level UI and server for the Soil Health Reports application.
+#   - Define the top-level UI and server for the California Soil Health Reports application.
 #   - Follows template-based workflow: Download Template → Upload Data → Generate Reports
 #   - Simplified workflow without column mapping complexity
 #
 # Flow:
-#   1) Upload module (`mod_upload`)
+#   1) Download module (`mod_download`)
 #        - Download Excel template or upload completed template
 #        - Validate uploaded data against template structure
 #        - Returns validated data and data dictionary
@@ -42,9 +42,11 @@ suppressPackageStartupMessages({
 cfg <- get_cfg()
 
 # --- Module sources (use portable paths) -------------------------------------
-source(file.path("R", "modules", "mod_upload.R"))
+source(file.path("R", "modules", "mod_download.R"))
+source(file.path("R", "modules", "mod_data_upload.R"))
 source(file.path("R", "modules", "mod_data_filter.R"))
 source(file.path("R", "modules", "mod_filters.R"))
+source(file.path("R", "modules", "mod_project_info.R"))
 source(file.path("R", "modules", "mod_grouping.R"))
 source(file.path("R", "modules", "mod_report.R"))
 
@@ -52,7 +54,7 @@ source(file.path("R", "modules", "mod_report.R"))
 # UI
 # =============================================================================
 ui <- fluidPage(
-  titlePanel("Soil Health Reports"),
+  titlePanel("California Soil Health Reports"),
 
   # Minor style tweaks to keep things tidy + optional branded stylesheet
   tags$head(
@@ -75,27 +77,48 @@ ui <- fluidPage(
 
       # 1) Template download and data upload
       div(class = "step-section",
-        div(class = "step-title", "Step 1: Template & Data"),
-        mod_upload_ui("upload")
+        div(class = "step-title", "Step 1: Download Template"),
+        mod_download_ui("download")
       ),
 
       # 2) Filter data by site_type, crop, texture
       div(class = "step-section",
-        div(class = "step-title", "Step 2: Filter Data"),
-        mod_data_filter_ui("data_filter")
+        div(class = "step-title", "Step 2: Upload Data"),
+        mod_data_upload_ui("data_upload")
       ),
 
-      # 3) Choose Producer / Year / Field
-      div(class = "step-section",
-        div(class = "step-title", "Step 3: Select Data"),
-        mod_filters_ui("filters")
-      ),
-
-      # 4) Choose grouping variable for averaging
+      # 3) Filter data by site_type, crop, texture
       conditionalPanel(
         condition = "output.data_ready",
         div(class = "step-section",
-          div(class = "step-title", "Step 4: Choose Grouping Variable"),
+          div(class = "step-title", "Step 3: Filter Data"),
+          mod_data_filter_ui("data_filter")
+        )
+      ),
+
+      # 4) Customize project information
+      conditionalPanel(
+        condition = "output.data_ready",
+        div(class = "step-section",
+          div(class = "step-title", "Step 4: Project Information"),
+          mod_project_info_ui("project_info")
+        )
+      ),
+
+      # 5) Choose Producer / Year / Field
+      conditionalPanel(
+        condition = "output.data_ready",
+        div(class = "step-section",
+          div(class = "step-title", "Step 5: Select Data"),
+          mod_filters_ui("filters")
+        )
+      ),
+
+      # 6) Choose grouping variable for averaging
+      conditionalPanel(
+        condition = "output.data_ready",
+        div(class = "step-section",
+          div(class = "step-title", "Step 6: Choose Grouping Variable"),
           mod_grouping_ui("grouping")
         )
       )
@@ -103,10 +126,13 @@ ui <- fluidPage(
     mainPanel(
       width = 8,
 
-      # 5) Show progress, preview the HTML, and expose downloads
-      div(class = "step-section",
-        div(class = "step-title", "Step 5: Generate Reports"),
-        mod_report_ui("report")
+      # 7) Show progress, preview the HTML, and expose downloads
+      conditionalPanel(
+        condition = "output.data_ready",
+        div(class = "step-section",
+          div(class = "step-title", "Step 7: Generate Reports"),
+          mod_report_ui("report")
+        )
       )
     )
   )
@@ -165,18 +191,24 @@ server <- function(input, output, session) {
     return(current_data)
   })
 
-  # 1) Upload module: handles template download and data upload, updates state
-      mod_upload_server("upload", cfg = cfg, state = state)
+  # 1) Download module: handles template download only
+      mod_download_server("download", cfg = cfg, state = state)
 
-  # 2) Data Filter module: provides dynamic filter inputs based on configuration
+  # 2) Data Upload module: handles data upload and validation
+  mod_data_upload_server("data_upload", state = state)
+  
+  # 3) Data Filter module: handles data filtering by site_type, crop, texture
   mod_data_filter_server("data_filter", state = state)
   
-  # 3) Filters module: provides selection inputs (no server logic needed)
+  # 4) Project Info module: allows customization of project text
+  mod_project_info_server("project_info", state = state)
   
-  # 4) Grouping module: allows selection of grouping variable for averaging
+  # 5) Filters module: provides selection inputs (no server logic needed)
+  
+  # 6) Grouping module: allows selection of grouping variable for averaging
   grouping_result <- mod_grouping_server("grouping", state = state)
   
-  # 5) Report module: uses data_pipeline() for report generation
+  # 7) Report module: uses data_pipeline() for report generation
   mod_report_server(
     id     = "report",
     cfg    = cfg,

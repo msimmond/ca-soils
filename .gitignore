@@ -29,12 +29,17 @@ renv/staging/
 *.utf8.md
 *.knit.md
 *.nb.html
+*.html.docx
+*.docx
 figure-output/
 .quarto/
 _site/
 outputs/
 soil-health-shiny/outputs/
 reports-rendered/
+quarto/*.html.docx
+quarto/*.docx
+quarto/~*
 
 # Allow a specific example render (if intentionally tracked)
 !01_producer-report.html
@@ -102,6 +107,9 @@ staging/
 organic-think-tank-reports/
 dirt-data-reports/
 ca-soils/
+# Ignore files directory but keep the template
+files/*
+!files/soil-health-template.xlsx
 
 # ===============================
 # Local scripts (not for CI/CD)
@@ -118,8 +126,6 @@ soil-health-shiny/data/*.csv
 !soil-health-shiny/data/data-template.csv
 !soil-health-shiny/data/data-dictionary-template.csv
 !soil-health-shiny/data/instructions-template.csv
-# If you want to ship a demo dataset, unignore it explicitly:
-# !soil-health-shiny/data/washi-data.csv
 
 # ===============================
 # Local env / credentials

@@ -99,7 +99,8 @@ generate_soil_health_report <- function(
   grouping_var = NULL,
   config = NULL,
   output_dir = NULL,
-  dict_path = NULL
+  dict_path = NULL,
+  project_info = NULL  # NEW: optional project info for customization
 ) {
   # ---- Resolve config --------------------------------------------------------
   if (is.null(config)) config <- get_cfg()
@@ -158,7 +159,12 @@ generate_soil_health_report <- function(
     year         = year,
     grouping_var = grouping_var,
     config       = config,
-    dict_path    = dict_path
+    dict_path    = dict_path,
+    # Add project info with sensible defaults
+    project_name = project_info$project_name %||% "Soil Health Assessment Project",
+    producer_name = project_info$producer_name %||% producer_id,  # Use UI value or fall back to data selection
+    project_summary = project_info$project_summary %||% "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, and biological indicators of soil health.",
+    looking_forward = project_info$looking_forward %||% "Thank you for participating in this soil health assessment. This data provides a baseline for understanding your soil's current condition and can help guide future management decisions. We look forward to working with you to improve soil health on your farm."
   )
 
   timestamp   <- format(Sys.time(), "%Y%m%d_%H%M%S")
@@ -223,7 +229,8 @@ if (requireNamespace("memoise", quietly = TRUE)) {
     grouping_var = NULL,
     config = NULL,
     output_dir = NULL,
-    dict_path = NULL
+    dict_path = NULL,
+    project_info = NULL  # NEW: optional project info
   ) {
     if (is.null(config)) config <- get_cfg()
     generate_soil_health_report(
@@ -233,7 +240,8 @@ if (requireNamespace("memoise", quietly = TRUE)) {
       grouping_var = grouping_var,
       config       = config,
       output_dir   = output_dir,
-      dict_path    = dict_path
+      dict_path    = dict_path,
+      project_info = project_info  # NEW: pass through project info
     )
   })
 }

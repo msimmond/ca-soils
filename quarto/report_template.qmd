@@ -1,6 +1,6 @@
 ---
-title: "![](images/logo.png) Soil Health Assessment Project </span><br> Regional Region"
-subtitle: "Producer Report"
+title: "![](images/logo.png) `r params$project_name`</span><br> `r params$producer_name`"
+subtitle: ""
 params:
   producer_id: null
   year: null
@@ -8,6 +8,10 @@ params:
   data_path: null
   config: null
   dict_path: null
+  project_name: "Soil Health Assessment Project"
+  producer_name: "Producer Name"
+  project_summary: "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, and biological indicators of soil health."
+  looking_forward: "Thank you for participating in this soil health assessment. This data provides a baseline for understanding your soil's current condition and can help guide future management decisions. We look forward to working with you to improve soil health on your farm."
 
 # Shouldn't need to edit the below values unless you want to customize.
 lang: en
@@ -1064,11 +1068,7 @@ if (pk_ok && has_coords) {
 
 ## Project Results
 
-For the project we took soil samples from your selected fields using the grouping variable "{{ params$grouping_var }}". You can see the GPS locations of your fields above. The other data included in this report are from other fields in the project for comparison.
-
-<!-- VMW Note that you'll need to change "orchards" to "annual fields" for Sarah's sites-->
-
-The results below are organized into tables and graphs describing the physical, chemical, carbon, and biological measurements from your soils. Each point represents an average of the five samples we collected from each field. All samples that were sent to the lab were collected from 0-6 inches depth, while in-field soil measurements were collected from a 6-8 inch hole. ***All in-field indicators are marked with an asterisk (*).***
+`r params$project_results`
 
 ```{r create-measurement-group-sections}
 #| output: asis

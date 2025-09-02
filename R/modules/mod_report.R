@@ -168,9 +168,9 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
     }
 
     # Memoised wrapper around the Quarto render call.
-    # Keys: (df_hash, producer_id, year_chr, grouping_var, config_hash)
+    # Keys: (df_hash, producer_id, year_chr, grouping_var, config_hash, project_info_hash)
     generate_report_memoized <- memoise::memoise(
-      function(df_hash, producer_id, year_chr, grouping_var, config_hash, tmp_csv_path, out_dir, dict_path = NULL) {
+      function(df_hash, producer_id, year_chr, grouping_var, config_hash, tmp_csv_path, out_dir, dict_path = NULL, project_info_hash = NULL) {
         generate_soil_health_report(
           data_path    = tmp_csv_path,
           producer_id  = producer_id,
@@ -178,7 +178,8 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
           grouping_var = grouping_var,
           config       = get_cfg(),         # config lives in options()
           output_dir   = out_dir,
-          dict_path    = dict_path
+          dict_path    = dict_path,
+          project_info = if (!is.null(project_info_hash)) state$project_info else NULL
         )
       },
       cache = memoise::cache_memory()
@@ -237,6 +238,15 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
         incProgress(0.35, detail = "Preparing inputs…")
         res <- tryCatch({
           incProgress(0.7, detail = "Rendering via Quarto…")
+          # Create hash for project info to include in memoization
+          project_info_hash <- if (!is.null(state$project_info)) {
+            if (requireNamespace("digest", quietly = TRUE)) {
+              digest::digest(state$project_info)
+            } else {
+              paste0("proj_", length(unlist(state$project_info)))
+            }
+          } else NULL
+          
           out_path <- generate_report_memoized(
             df_hash       = df_hash,
             producer_id   = producer,
@@ -245,7 +255,8 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
             config_hash   = config_hash,
             tmp_csv_path  = tmp_csv,
             out_dir       = output_dir,
-            dict_path     = tmp_dict
+            dict_path     = tmp_dict,
+            project_info_hash = project_info_hash
           )
           incProgress(1, detail = "Done")
           list(status = "success", path = out_path, error = NULL)

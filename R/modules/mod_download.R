@@ -30,82 +30,23 @@ mod_upload_ui <- function(id) {
   ns <- NS(id)
 
   tagList(
-    h4("Data Upload"),
+    h4("Template Download"),
 
-    # Choose mode: template download, upload, or preloaded server dataset
-    radioButtons(
-      ns("mode"),
-      "Data Source:",
-      choices  = c(
-        "Download Excel Template" = "template",
-        "Upload CSV/Excel file" = "upload", 
-        "Use server dataset" = "server"
+    div(
+      style = "padding: 15px; background-color: #f8f9fa; border-radius: 5px; margin: 10px 0;",
+      h5("Excel Template"),
+      p("Download our standardized Excel template to ensure your data is in the correct format."),
+      downloadButton(
+        ns("download_template"),
+        "Download Template",
+        class = "btn-primary",
+        style = "width: 100%; margin-bottom: 10px;"
       ),
-      selected = "template"
-    ),
-
-    # Template download section
-    conditionalPanel(
-      condition = "input.mode == 'template'",
-      ns = ns,
-      div(
-        style = "padding: 15px; background-color: #f8f9fa; border-radius: 5px; margin: 10px 0;",
-        h5("Excel Template"),
-        p("Download our standardized Excel template to ensure your data is in the correct format."),
-        downloadButton(
-          ns("download_template"),
-          "Download Template",
-          class = "btn-primary",
-          style = "width: 100%; margin-bottom: 10px;"
-        ),
-        actionLink(
-          ns("show_template_help"),
-          "View Template Instructions",
-          icon = icon("info-circle")
-        )
+      actionLink(
+        ns("show_template_help"),
+        "View Template Instructions",
+        icon = icon("info-circle")
       )
-    ),
-
-    # File upload input (only if "upload" mode is selected)
-    conditionalPanel(
-      condition = "input.mode == 'upload'",
-      ns = ns,
-      fileInput(
-        ns("file"),
-        "Choose CSV or Excel file:",
-        accept      = c(".csv", ".CSV", ".xlsx", ".xls"),
-        placeholder = "No file selected"
-      ),
-      helpText("Upload a CSV or Excel file with soil health data."),
-      
-      # Validation status area
-      div(id = ns("validation_status"))
-    ),
-
-    # Pre-loaded dataset selector (only if "server" mode is selected)
-    conditionalPanel(
-      condition = "input.mode == 'server'",
-      ns = ns,
-      selectInput(
-        ns("server_dataset"),
-        "Select dataset:",
-        choices  = c(
-          "Think Tank Growers Treatments" = "think_tank_growers_treatments.csv",
-          "Washi Data (Template Format)"  = "washi-data.csv"
-        ),
-        selected = "think_tank_growers_treatments.csv"
-      ),
-      helpText("Use a pre-loaded dataset that ships with the app.")
-    ),
-
-    # Show preview if data is available
-    conditionalPanel(
-      condition = "output.has_data",
-      ns = ns,
-      tags$hr(),
-      h5("Data Preview"),
-      verbatimTextOutput(ns("data_info")),
-      DT::dataTableOutput(ns("data_preview"))
     )
   )
 }
@@ -124,11 +65,11 @@ mod_upload_server <- function(id, cfg, state) {
       },
       content = function(file) {
         # Copy the pre-made template file
-        template_path <- "data/soil-health-template.xlsx"
+        template_path <- "files/soil-health-template.xlsx"
         if (file.exists(template_path)) {
           file.copy(template_path, file)
         } else {
-          stop("Template file not found. Please ensure soil-health-template.xlsx exists in the data folder.")
+          stop("Template file not found. Please ensure soil-health-template.xlsx exists in the files folder.")
         }
       }
     )

@@ -1,13 +1,10 @@
-Thank you for being a participant in our California Farm Demonstration Network assessment of soil health indicators. This work would not be possible without your collaboration and input.
-Our goal is to refine what tools are useful to track soil functions, compare the results from in-field and lab testing methods, and understand which tests respond to management differences. At the end of this study, we plan to have the following outputs:
+`r params$project_summary`
 
-**1)** A list of recommended in-field soil health assessment tools for farmers in California. 
+## Soil Health Indicators
 
-**2)** The results from in-field and lab assessments 
+Soil health is a term that describes how well a soil ecosystem supports plants, animals, and humans. It also recognizes the living nature of soils and the importance of soil microorganisms. Healthy soils can provide wildlife habitat, support biodiversity, reduce the effects of climate change, filter air and water, increase crop productivity and food security, and ensure thriving rural economies.
 
-**3)** A personalized report about your soil 
-
-**4)** The foundation of a soils database needed to develop benchmarks for regions across the state.
+The below table describes: 1. What each indicator helps measure in your soil; 2. Whether you want the measured value to be higher (more is better), lower (less is better), or in the middle (optimal range); and 3. How often to measure each indicator. Our understanding of these indicators is rapidly evolving as researchers measure them in diverse soils, cropping systems, and climates.
 
 ::: {.content-visible unless-format="html"}
 ![](images/pic1.png){height="3in"
@@ -15,16 +12,8 @@ style="float:right"
 fig-alt="in-field data collection."}
 :::
 <!-- Image wrapped around text for HTML -->
-**Things to keep in mind with this report:**
 
-**1)** For each indicator, you will see two fields listed. These are the fields selected for comparison. 
 
-**2)** The soil results for each of your fields may not reflect the impacts of recent soil management changes. Using comparisons on your farm and taking tests over multiple years is the best way to track the long–term status of your soil.
-<!-- Image below around text for docx -->
-
-## Soil Health Indicators
-
-Soil health is a term that describes how well a soil ecosystem supports plants, animals, and humans. It also recognizes the living nature of soils and the importance of soil microorganisms. Healthy soils can provide wildlife habitat, support biodiversity, reduce the effects of climate change, filter air and water, increase crop productivity and food security, and ensure thriving rural economies.
 
 
 <!-- ## Soil Science 101 -->
