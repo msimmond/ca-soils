@@ -75,11 +75,7 @@ mod_report_ui <- function(id) {
     conditionalPanel(
       condition = "output.show_progress",
       ns = ns,
-      div(class = "progress",
-          div(class = "progress-bar progress-bar-striped progress-bar-animated",
-              role = "progressbar", 
-              style = paste0("width: ", output$progress_value, "%"),
-              paste0(output$progress_detail, " (", round(output$progress_value), "%)")))
+      uiOutput(ns("progress_bar"))
     ),
 
     conditionalPanel(
@@ -310,6 +306,18 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
     
     output$progress_detail <- reactive({ progress_state()$detail })
     outputOptions(output, "progress_detail", suspendWhenHidden = FALSE)
+    
+    # Render the progress bar with current progress
+    output$progress_bar <- renderUI({
+      req(progress_state())
+      current_state <- progress_state()
+      
+      div(class = "progress",
+          div(class = "progress-bar progress-bar-striped progress-bar-animated",
+              role = "progressbar", 
+              style = paste0("width: ", current_state$value, "%"),
+              paste0(current_state$detail, " (", round(current_state$value), "%)")))
+    })
 
     output$has_report <- reactive({
       !is.null(report_result()) && identical(report_result()$status, "success")
