@@ -7,4 +7,5 @@ paths:
   template: "quarto/report_template.qmd"
   
   # Where rendered HTML reports will be saved
-  output_dir: "outputs" 
+  output_dir: "outputs"
+  

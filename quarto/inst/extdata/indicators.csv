@@ -1,21 +1,28 @@
-Indicator,Description,More_is_Better,Measurement_Frequency
-Organic Matter,Measures the amount of decomposed plant and animal material in soil,Yes,Annually
-pH,Measures soil acidity or alkalinity,Optimal Range,Every 2-3 years
-Cation Exchange Capacity,Measures soil's ability to hold and exchange nutrients,Yes,Every 3-5 years
-Bulk Density,Measures soil compaction and porosity,No,Every 2-3 years
-Aggregate Stability,Measures soil structure and resistance to erosion,Yes,Every 2-3 years
-Infiltration Rate,Measures how quickly water enters the soil,Yes,Every 2-3 years
-Available Water Capacity,Measures soil's ability to store water for plants,Yes,Every 3-5 years
-Nitrogen,Measures available nitrogen for plant growth,Optimal Range,Annually
-Phosphorus,Measures available phosphorus for plant growth,Optimal Range,Every 2-3 years
-Potassium,Measures available potassium for plant growth,Optimal Range,Every 2-3 years
-Calcium,Measures calcium levels for soil structure and plant health,Optimal Range,Every 3-5 years
-Magnesium,Measures magnesium levels for plant nutrition,Optimal Range,Every 3-5 years
-Sulfur,Measures sulfur levels for plant protein synthesis,Optimal Range,Every 3-5 years
-Zinc,Measures zinc levels for plant enzyme function,Optimal Range,Every 3-5 years
-Copper,Measures copper levels for plant metabolism,Optimal Range,Every 3-5 years
-Iron,Measures iron levels for plant chlorophyll production,Optimal Range,Every 3-5 years
-Manganese,Measures manganese levels for plant enzyme activation,Optimal Range,Every 3-5 years
-Boron,Measures boron levels for plant cell wall formation,Optimal Range,Every 3-5 years
-Active Carbon,Measures readily available carbon for microbial activity,Yes,Annually
-Respiration,Measures microbial activity and soil health,Yes,Annually 
+Soil Health Indicator,Soil Function,Scoring Curve Type
+Water Stable Aggregates,"Physical Stability & Support, Efficient Water Relations, Biodiversity & Habitat",More is better
+Aggregate Stability Index,"Physical Stability & Support, Efficient Water Relations, Biodiversity & Habitat",More is better
+Infiltration (1st inch),"Physical Stability & Support, Efficient Water Relations",Less is better
+Infiltration (2nd inch),"Physical Stability & Support, Efficient Water Relations",Less is better
+pH,Nutrient Cycling,Optimal Range
+CEC,Nutrient Cycling,More is better
+P,Nutrient Cycling,Optimal Range
+K,Nutrient Cycling,Optimal Range
+Ca,Nutrient Cycling,Optimal Range
+Mg,Nutrient Cycling,Optimal Range
+Total N,Nutrient Cycling,Optimal Range
+PMN - 28 days,"Nutrient Cycling, Biodiversity & Habitat",More is better
+NO3-N,Nutrient Cycling,Optimal Range
+Nitrate Quick Test,Nutrient Cycling,Optimal Range
+Total C,Nutrient Cycling,More is better
+Organic Matter,"Nutrient Cycling, , Biodiversity & Habitat",More is better
+CO2 Resp.,"Nutrient Cycling, Biodiversity & Habitat",More is better
+POXC,"Nutrient Cycling, Biodiversity & Habitat",More is better
+Microbial Biomass,"Nutrient Cycling, Biodiversity & Habitat",More is better
+Bacterial Biomass,"Nutrient Cycling, Biodiversity & Habitat",More is better
+Fungal Biomass,"Nutrient Cycling, Biodiversity & Habitat",More is better
+AMF Biomass,"Nutrient Cycling, Biodiversity & Habitat",More is better
+Fungi:Bacteria,"Nutrient Cycling, Biodiversity & Habitat",More is better
+Protozoan Biomass,"Nutrient Cycling, Biodiversity & Habitat",More is better
+Undifferentiated Biomass,"Nutrient Cycling, Biodiversity & Habitat",More is better
+Biopore Count,"Physical Stability & Support, Biodiversity & Habitat",More is better
+Visible Invert. Count,Biodiversity & Habitat,More is better
