@@ -1,4 +1,9 @@
-url: https://wa-department-of-agriculture.github.io/soils/
+project:
+  type: website
+  output-dir: docs
+
+URL: https://msimmond.github.io/ca-soils/
+BugReports: https://github.com/msimmond/ca-soils/issues 
 development:
   mode: auto
 
@@ -27,7 +32,7 @@ navbar:
       href: index.html
       aria-label: Home
     primers:
-      text: Primers
+      text: Quarto Primers
       menu:
       - text: "Quarto"
         href: articles/quarto.html
@@ -36,7 +41,7 @@ navbar:
     tutorials:
       text: Tutorials
       menu:
-      - text: "Create a {soils} project"
+      - text: "Create a {casoils} project"
         href: articles/project.html
       - text: "Render the example reports"
         href: articles/render-example.html
@@ -77,7 +82,7 @@ articles:
   - '`examples`'
 
 reference:
-- title: Create a {soils} project
+- title: Create a {casoils} project
   contents: create_soils
 - title: Data wrangling
   contents:
@@ -97,6 +102,7 @@ reference:
   - theme_facet_strip
   - set_scales
   - convert_ggiraph
+  - set_dynamic_scales
 - title: Tables
   contents:
   - make_ft
