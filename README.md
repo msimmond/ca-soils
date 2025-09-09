@@ -5,26 +5,29 @@
 [![R-CMD-check](https://github.com/msimmond/ca-soils/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/msimmond/ca-soils/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
+> Adapted from the [`soils`](https://github.com/WA-Department-of-Agriculture/soils) package developed by the Washington State Department of Agriculture and Washington State University as part of the Washington Soil Health Initiative.  
+> `casoils` is a lightly modified version for California by **Maegen Simmonds** for the **California Farm Demonstration Network (CFDN)**, with support from **UC Agriculture and Natural Resources (UCANR)**.
+
 ## Overview
 
-Introducing {casoils}: an R package for California soil health data visualization and reporting needs. {casoils} provides an enhanced version of the {soils} package with dynamic grouping capabilities for treatment comparisons and automated report generation.
+`casoils` is an R package for visualizing and reporting soil health data tailored to California’s unique agricultural context. It extends the [`soils`](https://github.com/WA-Department-of-Agriculture/soils) package developed by the Washington State Department of Agriculture and Washington State University, originally part of the **Washington Soil Health Initiative**.
 
-{casoils} is based on and extends the {soils} package, which was developed by the Washington State Department of Agriculture and Washington State University as part of the Washington Soil Health Initiative. This California-specific adaptation provides enhanced functionality while preserving the core methodology of the original package.
+**Note:** `casoils` involves only minor modifications to the original `soils` package — primarily to adjust default options, grouping behavior, and template content to suit California-specific datasets and workflows.
 
-## Key Features
+The California-specific `casoils` package enhances that core functionality with:
 
-- **Dynamic Grouping Support**: New `set_dynamic_scales()` function for flexible treatment comparisons
-- **California-Specific Adaptations**: Tailored for UCANR and California Farm Demonstration Network
-- **Enhanced Visualization**: Improved plotting capabilities with dynamic symbol and color assignment
-- **Automated Reporting**: Streamlined report generation for soil health assessments
+- Flexible grouping for treatment comparisons  
+- Customizable reporting tools  
+- Enhanced plotting and visualization options  
+- Integration with Quarto templates  
 
 ## Requirements
 
-The report template uses [Quarto](https://quarto.org/docs/get-started/), which is the next-generation version of R Markdown.
+The report template uses [Quarto](https://quarto.org/docs/get-started/), the next-generation version of R Markdown.
 
-We assume you're using [RStudio v2022.07](https://dailies.rstudio.com/version/2022.07.2+576.pro12/) or later for editing and previewing Quarto documents. We **strongly recommend** you use the [latest release of RStudio](https://posit.co/download/rstudio-desktop/) for support of all Quarto features.
+We recommend using [RStudio v2022.07](https://dailies.rstudio.com/version/2022.07.2+576.pro12/) or later for editing and previewing Quarto documents. For full feature support, install the [latest release of RStudio](https://posit.co/download/rstudio-desktop/).
 
-To render Microsoft Word (MS Word) documents, you must have MS Word installed and activated.
+> To render Microsoft Word (`.docx`) reports, MS Word must be installed locally.
 
 ## Installation
 
@@ -51,29 +54,31 @@ library(casoils)
 
 ## Usage
 
-{casoils} was developed to work 'out of the box' so you can immediately install and render an example report. The package includes all the functionality of the original {soils} package plus enhanced dynamic grouping capabilities.
+`casoils` is designed to work out of the box. After installation, you can immediately render an example report using built-in data and templates.
 
 ## Acknowledgement and Citation
 
-This report was generated using the {casoils} R package.
+This report was generated using the `casoils` R package.
 
-{casoils} was developed for UC Agriculture and Natural Resources (UCANR) as part of the California Farm Demonstration Network (CFDN).
+`casoils` was developed for UC Agriculture and Natural Resources (UCANR) as part of the California Farm Demonstration Network (CFDN).
 
-{casoils} is based on and extends the {soils} package, which was developed by the Washington State Department of Agriculture (WSDA) and Washington State University (WSU) as part of the Washington Soil Health Initiative.
+`casoils` is based on and extends the `soils` package, which was developed by the Washington State Department of Agriculture (WSDA) and Washington State University (WSU) as part of the Washington Soil Health Initiative.
 
-**To cite {casoils} in publications, please use:**
+This adaptation includes only minor edits to support California-specific workflows and reporting needs.
+
+**To cite `casoils` in publications, please use:**
 
 Simmonds M. 2025. casoils: California Soil Health Reporting Tools. UC Agriculture and Natural Resources / California Farm Demonstration Network. https://github.com/msimmond/ca-soils
 
-**To cite {soils} in publications, please use:**
+**To cite `soils` in publications, please use:**
 
 Ryan JN, McIlquham M, Sarpong KA, Michel LM, Potter TS, Griffin LaHue D, Gelardi DL. 2024. Visualize and Report Soil Health Data with {soils}. Washington Soil Health Initiative. https://github.com/WA-Department-of-Agriculture/soils
 
 ## Credits
 
-- {soils} adapts from RStudio Project Templates, {ratlas}, {quartotemplate}, and {golem}.
-- Text and figures in {soils} were adapted from WSU Extension publication #FS378E Soil Health in Washington Vineyards.
-- Indicators and template adaptations in {casoils} were developed in collaboration with UCANR's California Farm Demonstration Network (CFDN).
+- `soils` adapts from RStudio Project Templates, `ratlas`, `quartotemplate`, and `golem`.
+- Text and figures in `soils` were adapted from WSU Extension publication #FS378E Soil Health in Washington Vineyards.
+- `casoils` involved light modifications to support California-specific indicators, grouping behavior, and reporting templates in collaboration with UCANR’s California Farm Demonstration Network (CFDN).
 
 ## License
 
