@@ -5,44 +5,22 @@ fig-alt="Less is better scoring curve"}
 
 
 ```{r}
-# Indicators table loader with fallbacks + clear errors
-# This prevents hard failures if the CSV is missing or moved.
-
-indicators_path_candidates <- c(
-  "inst/extdata/indicators.csv",         # preferred (inst/extdata)
-  here::here("inst", "extdata", "indicators.csv"),  # robust project-root path
-  file.path("..", "inst", "extdata", "indicators.csv"), # parent directory fallback
-  file.path("..", "..", "inst", "extdata", "indicators.csv") # grandparent directory fallback
+indicators <- read.csv(
+  "inst/extdata/indicators.csv",
+  check.names = FALSE,
+  encoding = "UTF-8",
+  strip.white = TRUE
 )
-
-indicators_path <- NULL
-for (p in indicators_path_candidates) {
-  if (!is.null(p) && file.exists(p)) { 
-    indicators_path <- p; 
-    break 
-  }
-}
-
-if (is.null(indicators_path)) {
-  warning(
-    "Could not find 'indicators.csv'. Skipping the indicator table section. ",
-    "Looked in: ", paste(indicators_path_candidates, collapse = " | ")
-  )
-} else {
-  indicators <- read.csv(indicators_path, check.names = FALSE, encoding = "UTF-8")
-}
 ```
 
 ```{r}
-if (exists("indicators", inherits = FALSE) && nrow(indicators) > 0) {
-  flextable::as_flextable(indicators) |>
-  soils::style_ft(
-    header_font = header_font,
-    body_font = body_font,
-    header_color = header_color,
-    header_text_color = header_text_color,
-    border_color = border_color
-  ) |>
-  flextable::set_table_properties(layout = "autofit")
-}
+flextable::flextable(indicators) |>
+casoils::style_ft(
+  header_font = header_font,
+  body_font = body_font,
+  header_color = header_color,
+  header_text_color = header_text_color,
+  border_color = border_color
+) |>
+flextable::set_table_properties(layout = "autofit")
 ```

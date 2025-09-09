@@ -978,6 +978,8 @@ if ("Crop" %in% names(gis_ft) && any(is.na(gis_ft$Crop))) {
     dplyr::select(-Crop)
 }
 
+# Debug prints removed for production
+
 # If longitude/latitude have any NAs, drop those columns from the printed table
 if (any(is.na(gis_ft$Longitude)) || any(is.na(gis_ft$Latitude))) {
   cols_keep <- setdiff(names(gis_ft), c("Longitude", "Latitude"))
