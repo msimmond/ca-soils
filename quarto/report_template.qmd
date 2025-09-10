@@ -224,24 +224,10 @@ testthat::expect_in(measurement_groups, dictionary$measurement_group)
 <!-- Set styling variables -->
 
 ```{r set-fonts-colors}
-# Register fonts for Shiny server compatibility
-if (requireNamespace("gdtools", quietly = TRUE)) {
-  tryCatch({
-    gdtools::register_gfont("Arial")
-  }, error = function(e) {
-    # Fallback to systemfonts if gdtools fails
-    if (requireNamespace("systemfonts", quietly = TRUE)) {
-      systemfonts::register_font(
-        name = "Arial",
-        plain = "Arial"
-      )
-    }
-  })
-}
-
-# EDIT: Replace any font names and colors to match your branding.
+# Set fonts that work reliably on Shiny servers
+# Use system fonts that are guaranteed to be available
 header_font <- "Georgia"
-body_font <- "Arial"
+body_font <- "sans-serif"  # This will use the system default sans-serif font
 
 # Flextable colors -----------------------------------------------------
 
