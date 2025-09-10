@@ -54,13 +54,20 @@ table_list |>
 ```{r}
 # If HTML, convert the strip plot to interactive ggiraph
 if (out_type == "html") {
-plot_list |>
-  purrr::pluck(group) |>
-  convert_ggiraph(
-    plot,
-    plot_name = group,
-    body_font = body_font
-  )
+  tryCatch({
+    plot_list |>
+      purrr::pluck(group) |>
+      convert_ggiraph(
+        plot,
+        plot_name = group,
+        body_font = body_font
+      )
+  }, error = function(e) {
+    # If interactive plot fails, show static plot instead
+    cat("Interactive plot failed, showing static version:\n")
+    plot_list |>
+      purrr::pluck(group)
+  })
 }
 ```
 :::

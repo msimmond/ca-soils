@@ -227,7 +227,7 @@ testthat::expect_in(measurement_groups, dictionary$measurement_group)
 # Set fonts that work reliably on Shiny servers
 # Use system fonts that are guaranteed to be available
 header_font <- "Georgia"
-body_font <- "sans-serif"  # This will use the system default sans-serif font
+body_font <- "Helvetica"  # Use Helvetica which is more likely to be available
 
 # Flextable colors -----------------------------------------------------
 
