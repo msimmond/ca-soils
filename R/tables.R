@@ -59,12 +59,12 @@ format_ft_colors <- function(
       j = 1,
       part = "footer",
       value = flextable::as_paragraph(
-        "Values \U2265 project average have ",
+        "Values greater than project average have ",
         flextable::as_highlight(
           "darker backgrounds. \n",
           darker_color
         ),
-        "Values < project average have ",
+        "Values less than project average have ",
         flextable::as_highlight(
           "lighter backgrounds. ",
           lighter_color
