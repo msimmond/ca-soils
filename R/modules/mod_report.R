@@ -87,8 +87,13 @@ mod_report_ui <- function(id) {
       tags$hr(),
       h5("Generated Report"),
       verbatimTextOutput(ns("report_info")),
-
-      # Report preview and download buttons removed - not needed
+      
+      # Auto-download buttons
+      tags$div(
+        style = "margin-top: 15px;",
+        downloadButton(ns("download_html"), "Download HTML Report", class = "btn btn-primary"),
+        downloadButton(ns("download_docx"), "Download DOCX Report", class = "btn btn-success", style = "margin-left: 10px;")
+      )
     ),
 
     conditionalPanel(
@@ -355,6 +360,46 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
       res$error
     })
 
-    # Download buttons removed - reports are already generated and saved locally
+    # Download handlers for HTML and DOCX reports
+    output$download_html <- downloadHandler(
+      filename = function() {
+        res <- report_result()
+        req(res$status == "success")
+        producer <- state$selected_producer
+        year <- state$selected_year
+        paste0("soil-health-report-", producer, "-", year, ".html")
+      },
+      content = function(file) {
+        res <- report_result()
+        req(res$status == "success")
+        file.copy(res$path, file)
+      }
+    )
+
+    output$download_docx <- downloadHandler(
+      filename = function() {
+        res <- report_result()
+        req(res$status == "success")
+        producer <- state$selected_producer
+        year <- state$selected_year
+        paste0("soil-health-report-", producer, "-", year, ".docx")
+      },
+      content = function(file) {
+        res <- report_result()
+        req(res$status == "success")
+        
+        # Get the DOCX file path (same directory as HTML, different extension)
+        html_path <- res$path
+        base_name <- tools::file_path_sans_ext(basename(html_path))
+        quarto_dir <- dirname(html_path)
+        docx_path <- file.path(quarto_dir, paste0(base_name, ".docx"))
+        
+        if (file.exists(docx_path)) {
+          file.copy(docx_path, file)
+        } else {
+          stop("DOCX file not found. Please regenerate the report.")
+        }
+      }
+    )
   })
 }
