@@ -1131,9 +1131,17 @@ if (requireNamespace("downloadthis", quietly = TRUE)) {
 }
 ```
 
-## Looking Forward
-
-{{< include 08_looking-forward.qmd >}}
+```{r looking-forward-conditional, echo=FALSE}
+# Only show Looking Forward section if user provided content
+if (!is.null(params$looking_forward) && 
+    !is.na(params$looking_forward) && 
+    trimws(params$looking_forward) != "") {
+  cat("## Looking Forward\n\n")
+  cat(params$looking_forward)
+  cat("\n\n")
+  cat("![](images/pic2.png){width=\"4in\" fig-alt=\"Photo of soil in a shovel.\"}")
+}
+```
 
 <!-- Please do not remove the acknowledgement. -->
 
