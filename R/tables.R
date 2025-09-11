@@ -47,6 +47,9 @@ format_ft_colors <- function(
     }
   )
 
+  # Center align all columns
+  ft <- flextable::align(ft, align = "center", part = "all")
+
   # Add an empty footer line
   ft <- flextable::add_footer_lines(ft, values = "")
 
