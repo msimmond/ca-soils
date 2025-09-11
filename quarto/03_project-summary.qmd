@@ -2,9 +2,8 @@
 
 ## Soil Health Indicators
 
-Soil health is a term that describes how well a soil ecosystem supports plants, animals, and humans. It also recognizes the living nature of soils and the importance of soil microorganisms. Healthy soils can provide wildlife habitat, support biodiversity, reduce the effects of climate change, filter air and water, increase crop productivity and food security, and ensure thriving rural economies.
-
-The below table describes: 1. What each indicator helps measure in your soil; 2. Whether you want the measured value to be higher (more is better), lower (less is better), or in the middle (optimal range); and 3. How often to measure each indicator. Our understanding of these indicators is rapidly evolving as researchers measure them in diverse soils, cropping systems, and climates.
+Soil health is defined as the continued capacity of a soil to function as a living ecosystem that supports plants, animals, and humans. It also recognizes the living nature of soils and the importance of soil microorganisms. Healthy soils can provide wildlife habitat, support biodiversity, reduce the effects of climate change, filter air and water, increase crop productivity and food security, and ensure thriving rural economies.
+The below table describes: 1. The name of the soil health indicators included in this report; 2. What function each indicator helps measure in your soil; and 3. Whether you want the measured value to be higher (more is better), lower (less is better), or in the middle (optimal range); Our understanding of these indicators is rapidly evolving as researchers measure them in diverse soils, cropping systems, and climates.
 
 ::: {.content-visible unless-format="html"}
 ![](images/pic1.png){height="3in"
