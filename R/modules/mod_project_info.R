@@ -71,7 +71,7 @@ mod_project_info_ui <- function(id) {
         textAreaInput(
           ns("looking_forward"),
           label = NULL,
-          value = "Thank you for participating in this soil health assessment. This data provides a baseline for understanding your soil's current condition and can help guide future management decisions. We look forward to working with you to improve soil health on your farm.",
+          value = "",
           rows = 4,
           placeholder = "Provide summary, next steps, and thank participants..."
         )
