@@ -35,15 +35,7 @@ mod_about_ui <- function(id) {
           div(
             class = "well",
             h3("What is this app?", style = "color: #34495e;"),
-            p("The California Soil Health Reports app is a web-based tool designed to help agricultural producers, researchers, and extension professionals generate comprehensive soil health reports from their field data."),
-            p("This application streamlines the process of creating professional soil health reports by providing:"),
-            tags$ul(
-              tags$li("Standardized data templates for consistent data collection"),
-              tags$li("Automated data validation and quality checks"),
-              tags$li("Interactive filtering and selection tools"),
-              tags$li("Professional report generation in HTML and DOCX formats"),
-              tags$li("Customizable project information and summaries")
-            )
+            p("The California Soil Health Reports app is a web-based tool that helps agricultural producers, researchers, and extension professionals generate comprehensive soil health reports from their field data. Simply upload your data, customize your project information, and download reports in HTML or DOCX format.")
           ),
           
           # How it works
@@ -76,41 +68,13 @@ mod_about_ui <- function(id) {
             p("Each indicator includes detailed explanations of what it measures, why it's important, and how it was analyzed in your specific assessment.")
           ),
           
-          # Technical Information
-          div(
-            class = "well",
-            h3("Technical Information", style = "color: #34495e;"),
-            p("This application is built using:"),
-            tags$ul(
-              tags$li("R Shiny for the interactive web interface"),
-              tags$li("Quarto for professional report generation"),
-              tags$li("The {casoilsutils} R package for data processing and visualization"),
-              tags$li("Flextable for formatted tables and styling")
-            ),
-            p("The app provides a user-friendly interface for generating comprehensive soil health reports without requiring technical expertise in R or data analysis.")
-          ),
-          
-          # Features & Benefits
-          div(
-            class = "well",
-            h3("Key Features", style = "color: #34495e;"),
-            tags$ul(
-              tags$li("Standardized Excel templates for consistent data collection"),
-              tags$li("Automated data validation and quality checks"),
-              tags$li("Interactive filtering and selection tools"),
-              tags$li("Professional report generation in HTML and DOCX formats"),
-              tags$li("Customizable project information and summaries"),
-              tags$li("Comprehensive soil health indicator analysis"),
-              tags$li("No technical expertise required - designed for agricultural professionals")
-            )
-          ),
           
           # Development & Credits
           div(
             class = "well",
             h3("Development & Credits", style = "color: #34495e;"),
             p("This application was developed by", tags$strong("Maegen Simmonds"), "in collaboration with UC Agriculture and Natural Resources (UCANR) and the California Farm Demonstration Network (CFDN)."),
-            p("The app is built using the {casoilsutils} R package, which builds on and reuses functions originally developed in the {soils} package, created by the Washington State Department of Agriculture and Washington State University as part of the Washington Soil Health Initiative (WASHI)."),
+            p("The app is built using the {casoilsutils} R package, also developed by Maegen Simmonds, which builds on and reuses functions originally developed in the {soils} package, created by the Washington State Department of Agriculture and Washington State University as part of the Washington Soil Health Initiative (WASHI)."),
             p("Development of this application was supported by funds from the", tags$strong("Climate Action Research Grants Program of the University of California, Grant # R02CP6986"), ".")
           ),
           
