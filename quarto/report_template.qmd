@@ -1131,7 +1131,7 @@ if (requireNamespace("downloadthis", quietly = TRUE)) {
 }
 ```
 
-```{r looking-forward-conditional, echo=FALSE}
+```{r looking-forward-conditional, echo=FALSE, results='asis'}
 # Only show Looking Forward section if user provided content
 if (!is.null(params$looking_forward) && 
     !is.na(params$looking_forward) && 
