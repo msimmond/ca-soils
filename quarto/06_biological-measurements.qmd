@@ -20,5 +20,3 @@ This indicator was measured using a golf ball sized aggregate of soil that was v
 ***Visible Biodiversity*** is a count of the visible soil organisms in a shovelful of soil. Examples of observed organisms include earthworms, mites, springtails, millipedes, roundworms, beetles, ants, pill bugs, earwigs, and spiders. Soil organisms are important because they broadly influence all aspects of soil function including but not limited to aggregation, water dynamics, nutrient cycling, and pest suppression. Visible soil organisms also indicate the presence of small microorganisms within the soil food web.
 
 This indicator was measured by digging a ~6-8 inch hole and then counting the number of different species in the dug up soil, as well as how many of each there were.
-
-
