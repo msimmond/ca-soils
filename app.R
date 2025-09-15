@@ -49,92 +49,112 @@ source(file.path("R", "modules", "mod_filters.R"))
 source(file.path("R", "modules", "mod_project_info.R"))
 source(file.path("R", "modules", "mod_grouping.R"))
 source(file.path("R", "modules", "mod_report.R"))
+source(file.path("R", "modules", "mod_about.R"))
 
 # =============================================================================
 # UI
 # =============================================================================
-ui <- fluidPage(
-  titlePanel("California Soil Health Reports"),
-
-  # Minor style tweaks to keep things tidy + optional branded stylesheet
-  tags$head(
+ui <- navbarPage(
+  title = "California Soil Health Reports",
+  windowTitle = "California Soil Health Reports",
+  id = "main_page",
+  collapsible = TRUE,
+  selected = "page_build_reports",
+  
+  # Header with styles
+  header = tags$head(
     tags$style(HTML("
       .btn-group .btn { margin-right: 5px; }
       .progress       { margin: 10px 0;   }
       .alert          { margin: 10px 0;   }
       .step-section   { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
       .step-title     { font-weight: bold; color: #333; margin-bottom: 10px; }
+      .well           { background-color: #f5f5f5; border: 1px solid #e3e3e3; border-radius: 4px; padding: 19px; margin-bottom: 20px; }
     ")),
     if (!is.null(cfg$paths$styles) && file.exists(cfg$paths$styles)) {
       # Allow project-branded CSS defined in config.yml (paths.styles)
       tags$link(rel = "stylesheet", type = "text/css", href = cfg$paths$styles)
     }
   ),
+  
+  # Build Reports Tab (main functionality)
+  tabPanel(
+    title = "Build Reports",
+    value = "page_build_reports",
+    fluidPage(
+      sidebarLayout(
+        sidebarPanel(
+          width = 4,
 
-  sidebarLayout(
-    sidebarPanel(
-      width = 4,
+          # 1) Template download and data upload
+          div(class = "step-section",
+            div(class = "step-title", "Step 1: Download Template"),
+            mod_download_ui("download")
+          ),
 
-      # 1) Template download and data upload
-      div(class = "step-section",
-        div(class = "step-title", "Step 1: Download Template"),
-        mod_download_ui("download")
-      ),
+          # 2) Filter data by site_type, crop, texture
+          div(class = "step-section",
+            div(class = "step-title", "Step 2: Upload Data"),
+            mod_data_upload_ui("data_upload")
+          ),
 
-      # 2) Filter data by site_type, crop, texture
-      div(class = "step-section",
-        div(class = "step-title", "Step 2: Upload Data"),
-        mod_data_upload_ui("data_upload")
-      ),
+          # 3) Filter data by site_type, crop, texture
+          conditionalPanel(
+            condition = "output.data_ready",
+            div(class = "step-section",
+              div(class = "step-title", "Step 3: Filter Data"),
+              mod_data_filter_ui("data_filter")
+            )
+          ),
 
-      # 3) Filter data by site_type, crop, texture
-      conditionalPanel(
-        condition = "output.data_ready",
-        div(class = "step-section",
-          div(class = "step-title", "Step 3: Filter Data"),
-          mod_data_filter_ui("data_filter")
-        )
-      ),
+          # 4) Customize project information
+          conditionalPanel(
+            condition = "output.data_ready",
+            div(class = "step-section",
+              div(class = "step-title", "Step 4: Project Information"),
+              mod_project_info_ui("project_info")
+            )
+          ),
 
-      # 4) Customize project information
-      conditionalPanel(
-        condition = "output.data_ready",
-        div(class = "step-section",
-          div(class = "step-title", "Step 4: Project Information"),
-          mod_project_info_ui("project_info")
-        )
-      ),
+          # 5) Choose Producer / Year / Field
+          conditionalPanel(
+            condition = "output.data_ready",
+            div(class = "step-section",
+              div(class = "step-title", "Step 5: Select Data"),
+              mod_filters_ui("filters")
+            )
+          ),
 
-      # 5) Choose Producer / Year / Field
-      conditionalPanel(
-        condition = "output.data_ready",
-        div(class = "step-section",
-          div(class = "step-title", "Step 5: Select Data"),
-          mod_filters_ui("filters")
-        )
-      ),
+          # 6) Choose grouping variable for averaging
+          conditionalPanel(
+            condition = "output.data_ready",
+            div(class = "step-section",
+              div(class = "step-title", "Step 6: Choose Grouping Variable"),
+              mod_grouping_ui("grouping")
+            )
+          )
+        ),
+        mainPanel(
+          width = 8,
 
-      # 6) Choose grouping variable for averaging
-      conditionalPanel(
-        condition = "output.data_ready",
-        div(class = "step-section",
-          div(class = "step-title", "Step 6: Choose Grouping Variable"),
-          mod_grouping_ui("grouping")
-        )
-      )
-    ),
-    mainPanel(
-      width = 8,
-
-      # 7) Show progress, preview the HTML, and expose downloads
-      conditionalPanel(
-        condition = "output.data_ready",
-        div(class = "step-section",
-          div(class = "step-title", "Step 7: Generate Reports"),
-          mod_report_ui("report")
+          # 7) Show progress, preview the HTML, and expose downloads
+          conditionalPanel(
+            condition = "output.data_ready",
+            div(class = "step-section",
+              div(class = "step-title", "Step 7: Generate Reports"),
+              mod_report_ui("report")
+            )
+          )
         )
       )
     )
+  ),
+  
+  # About Tab
+  tabPanel(
+    title = "About",
+    value = "page_about",
+    mod_about_ui("about")
   )
 )
 
@@ -215,6 +235,9 @@ server <- function(input, output, session) {
     state  = state,
     data_pipeline = data_pipeline
   )
+  
+  # About module
+  mod_about_server("about")
 
   # Update state with selected grouping variable
   observe({
