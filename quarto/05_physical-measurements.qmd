@@ -4,12 +4,12 @@
 
 Soil texture was measured via hydrometer, after the removal of larger (>2mm) soil particles.
 
-***Wet Aggregate Stability*** measures the resistance of soil aggregates to disintegration. Aggregates form when soil particles associate with organic matter, plant roots, fungal hyphae, and “glues” made by soil microbes; this shows how biological life in the soil impacts soil physical properties. Stable aggregates can reduce erosion, and increase infiltration, drainage, and storage capacity. High clay soils tend to have higher aggregate stability, but increasing soil organic matter improves aggregate stability across all soil textures.
+***Wet Aggregate Stability*** measures the resistance of soil aggregates to disintegration in water. Aggregates form when soil particles associate with organic matter, plant roots, fungal hyphae, and “glues” made by soil microbes. This shows how biological life in the soil impacts soil physical properties. Stable aggregates can reduce erosion, and increase infiltration, drainage, and storage capacity. High clay soils tend to have higher aggregate stability, but increasing soil organic matter improves aggregate stability across all soil textures.
 
 Aggregate stability was measured two ways: 1) the percentage of 0.25-2.00 mm aggregates that stay intact after exposure to artificial rain. A higher value means that a greater percentage of the soil remained aggregated. 2) For the in-field measurements, we collected intact soil aggregates, dried them for at least 24 hours, and then measured their disintegration when submerged in water using the camera function as part of the SLAKES App. The results of this app provide an Index score from ~0.1 to 1.0; a higher number indicating greater aggregate stability.
 
-***Infiltration Rate*** measures the rate at which water enters the soil surface. Texture, salinity, plow pans, and soil structure drive water movement in the soil. Infiltration is supported by soil movement and aggregation by ecosystem engineers (ants, earthworms, enchytraeids) and plant roots and fungal hyphae.
+***Infiltration Rate*** measures the rate at which water enters the soil surface. Texture, salinity, plow pans, surface compaction, and soil structure drive water movement in the soil. Infiltration is supported by soil movement and aggregation by ecosystem engineers (ants, earthworms, enchytraeids) and plant roots and fungal hyphae.
 
-In this assessment, infiltration was measured in-field by timing how long it took for a first and second inch of water to infiltrate into the soil profile using a single ring infiltration test, with a cut-off time of 30 minutes.
+In this assessment, infiltration was measured in-field by timing how long it took for a first and second inch of water to infiltrate into the soil profile using a single ring infiltration test, with a cut-off time of 30 minutes per inch.
 
 
