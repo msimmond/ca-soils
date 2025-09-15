@@ -23,4 +23,5 @@ casoils::style_ft(
   border_color = border_color
 ) |>
 flextable::set_table_properties(layout = "autofit")
+
 ```

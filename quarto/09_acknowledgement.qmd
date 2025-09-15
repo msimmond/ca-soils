@@ -1,10 +1,6 @@
-This report was generated with the {casoils} R package, developed for UC Agriculture and Natural Resources (UCANR) and the California Farm Demonstration Network.
+This report was generated with the {casoilsutils} R package, developed for UC Agriculture and Natural Resources (UCANR) and the California Farm Demonstration Network (CFDN). {casoilsutils} is a lightweight utility package that builds on and reuses functions originally developed in the {soils} package, created by the Washington State Department of Agriculture and Washington State University as part of the Washington Soil Health Initiative (WASHI). Unlike {soils}, which includes a full reporting website and instructional materials, {casoilsutils} focuses solely on function-level utilities.
 
-{casoils} builds upon the {soils} package, created by the Washington State Department of Agriculture and Washington State University as part of the Washington Soil Health Initiative.
+The reporting app and the {casoilsutils} codebase were developed by Maegen Simmonds, in collaboration with the UCANR team and the CFDN. Text and figures were adapted from WSU Extension publication #FS378E Soil Health in Washington Vineyards. Special thanks to Jadey Ryan (WASHI) and Peter Geoghan (Gaudin Soil Agroecology Lab) for sharing insights on WASHI code with us and answering questions about generating reports. Text describing the in-field indicators was adapted from the NRCS Cropland In-Field Soil Health Assessment Guide (Technical Note No. 450-06 Jan 2021).
 
----
-
-Special thanks to Peter Geoghan from the Gaudin Soil Agroecology Lab for sharing his adaptation of the WASHI code with us and answering questions about generating reports. Text describing the in-field indicators was adapted from the NRCS Cropland In-Field Soil Health Assessment Guide (Technical Note No. 450-06 Jan 2021).
-
-The soils collection and analysis for this report was supported by funds from the Climate Action Research Grants Program of the University of California, Grant # R02CP6986.
+Development of this report was supported by funds from the Climate Action Research Grants Program of the University of California, Grant # R02CP6986.
 
