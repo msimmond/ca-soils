@@ -1,0 +1,20 @@
+# Ignore files that shouldn't be deployed to ShinyApps.io
+README.Rmd
+README.md
+*.Rmd
+*.md
+!quarto/*.qmd
+!quarto/*.md
+
+# Ignore the casoils source directory (we only need the .tar.gz)
+ca-soils/
+dirt-data-reports/
+organic-think-tank-reports/
+
+# Ignore man directory and figures that cause deployment issues
+man/
+man/figures/
+
+# Ignore any README files that might be in subdirectories
+**/README.Rmd
+**/README.md

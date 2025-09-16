@@ -84,24 +84,24 @@ if (!nzchar(quarto_bin)) {
 invisible(system2(quarto_bin, args = "--version", stdout = TRUE, stderr = TRUE))
 
 
-## --- 5) Load soils package ---------------------------------------------------
+## --- 5) Load casoils package ---------------------------------------------------
 # Two possible modes:
-#   • Development: USE_LOCAL_SOILS=1 + ~/projects/soils exists
+#   • Development: USE_LOCAL_CASOILS=1 + ~/projects/ca-soils exists
 #       - loads local package source with devtools::load_all()
-#   • Production (default): library(soils) loads the version pinned by renv
+#   • Production (default): library(casoils) loads the version pinned by renv
 
-use_local_soils <- identical(Sys.getenv("USE_LOCAL_SOILS", "0"), "1")
-local_soils_dir <- path_expand("~/projects/soils")
+use_local_casoils <- identical(Sys.getenv("USE_LOCAL_CASOILS", "0"), "1")
+local_casoils_dir <- path_expand("~/projects/ca-soils")
 
-if (use_local_soils && dir_exists(local_soils_dir)) {
+if (use_local_casoils && dir_exists(local_casoils_dir)) {
   if (!requireNamespace("devtools", quietly = TRUE)) {
-    stop("devtools is required to load local 'soils' in development mode. Please install it in this renv.")
+    stop("devtools is required to load local 'casoils' in development mode. Please install it in this renv.")
   }
-  message("🔧 Using local 'soils' from: ", local_soils_dir)
-  devtools::load_all(local_soils_dir, quiet = TRUE)
-  library(soils)  # make it available like a normal package
+  message("🔧 Using local 'casoils' from: ", local_casoils_dir)
+  devtools::load_all(local_casoils_dir, quiet = TRUE)
+  library(casoils)  # make it available like a normal package
 } else {
-  library(soils)  # standard load (uses version from renv.lock)
+  library(casoils)  # standard load (uses version from renv.lock)
 }
 
 

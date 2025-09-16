@@ -57,7 +57,7 @@ if (out_type == "html") {
   tryCatch({
     plot_list |>
       purrr::pluck(group) |>
-      convert_ggiraph(
+      casoils::convert_ggiraph(
         plot,
         plot_name = group,
         body_font = body_font
