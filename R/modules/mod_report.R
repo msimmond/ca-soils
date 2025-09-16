@@ -119,10 +119,8 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
     if (!file.exists(wrapper_path)) {
       stop("Could not find wrapper at: ", wrapper_path)
     }
-    # Only source if the function is not already in the environment
-    if (!exists("generate_soil_health_report", mode = "function")) {
-      source(wrapper_path, local = FALSE)
-    }
+    # Always source to ensure we have the latest version with selected_indicators parameter
+    source(wrapper_path, local = FALSE)
 
     # ---- Output directory & static path for preview --------------------------
     output_dir <- cfg$paths$output_dir %||% "outputs"
@@ -173,9 +171,9 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
     }
 
     # Memoised wrapper around the Quarto render call.
-    # Keys: (df_hash, producer_id, year_chr, grouping_var, config_hash, project_info_hash)
+    # Keys: (df_hash, producer_id, year_chr, grouping_var, config_hash, project_info_hash, selected_indicators_hash)
     generate_report_memoized <- memoise::memoise(
-      function(df_hash, producer_id, year_chr, grouping_var, config_hash, tmp_csv_path, out_dir, dict_path = NULL, project_info_hash = NULL) {
+      function(df_hash, producer_id, year_chr, grouping_var, config_hash, tmp_csv_path, out_dir, dict_path = NULL, project_info_hash = NULL, selected_indicators_hash = NULL) {
         generate_soil_health_report(
           data_path    = tmp_csv_path,
           producer_id  = producer_id,
@@ -184,11 +182,15 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
           config       = get_cfg(),         # config lives in options()
           output_dir   = out_dir,
           dict_path    = dict_path,
-          project_info = if (!is.null(project_info_hash)) state$project_info else NULL
+          project_info = if (!is.null(project_info_hash)) state$project_info else NULL,
+          selected_indicators = if (!is.null(selected_indicators_hash)) state$selected_indicators else NULL
         )
       },
       cache = memoise::cache_memory()
     )
+    
+    # Clear any existing cache to ensure we use the updated function
+    memoise::forget(generate_report_memoized)
 
     # --------------------------
     # Button → render report
@@ -268,6 +270,12 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
           Sys.sleep(0.5)  # Give user time to see this message
           
           # The actual Quarto rendering happens here - this is the long part
+          selected_indicators_hash <- if (!is.null(state$selected_indicators)) {
+            digest::digest(sort(state$selected_indicators))
+          } else {
+            NULL
+          }
+          
           out_path <- generate_report_memoized(
             df_hash       = df_hash,
             producer_id   = producer,
@@ -277,7 +285,8 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
             tmp_csv_path  = tmp_csv,
             out_dir       = output_dir,
             dict_path     = tmp_dict,
-            project_info_hash = project_info_hash
+            project_info_hash = project_info_hash,
+            selected_indicators_hash = selected_indicators_hash
           )
           
           incProgress(0.95, detail = "Finalizing report...")

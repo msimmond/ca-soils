@@ -100,7 +100,8 @@ generate_soil_health_report <- function(
   config = NULL,
   output_dir = NULL,
   dict_path = NULL,
-  project_info = NULL  # NEW: optional project info for customization
+  project_info = NULL,  # NEW: optional project info for customization
+  selected_indicators = NULL  # NEW: optional list of indicators to include
 ) {
   # ---- Resolve config --------------------------------------------------------
   if (is.null(config)) config <- get_cfg()
@@ -132,8 +133,11 @@ generate_soil_health_report <- function(
   source("R/logic/validate.R")
 
   df <- load_lab_data(data_path)
+  
+  # Debug: print column names to see what's available
+  cat("Available columns in data:", paste(names(df), collapse = ", "), "\n")
 
-  # Warn if lat/long invalid (but don’t stop app)
+  # Warn if lat/long invalid (but don't stop app)
   if (all(c("latitude", "longitude") %in% names(df))) {
     coords_ok <- validate_coordinates(df)
     if (!isTRUE(coords_ok)) {
@@ -143,6 +147,42 @@ generate_soil_health_report <- function(
 
   # Validate that producer/year exist in the dataset
   validate_producer_year(df, producer_id, year)
+
+  # ---- Filter indicators if specified ----------------------------------------
+  if (!is.null(selected_indicators) && length(selected_indicators) > 0) {
+    
+    # Load data dictionary to get indicator column names
+    if (!is.null(dict_path) && file.exists(dict_path)) {
+      dict <- readr::read_csv(dict_path, show_col_types = FALSE)
+      # Get column names for selected indicators
+      indicator_cols <- dict$column_name[dict$column_name %in% selected_indicators]
+      
+      # Keep essential columns plus selected indicators
+      # Note: texture is treated as metadata, not an indicator
+      essential_cols <- c("producer_id", "year", "field_id", "latitude", "longitude", 
+                         "site_type", "crop", "texture", "measurement_group", "sample_id",
+                         "sand_pct", "silt_pct", "clay_pct")
+      
+      # Add the selected grouping variable (treatment_id or field_id) if it's not already included
+      if (!is.null(grouping_var) && !grouping_var %in% essential_cols) {
+        essential_cols <- c(essential_cols, grouping_var)
+      }
+      cols_to_keep <- unique(c(essential_cols, indicator_cols))
+      cols_to_keep <- cols_to_keep[cols_to_keep %in% names(df)]
+      
+      # Ensure texture is always included if it exists in the original data
+      if ("texture" %in% names(df) && !"texture" %in% cols_to_keep) {
+        cols_to_keep <- c(cols_to_keep, "texture")
+      }
+      
+      # Filter the dataframe to only include selected columns
+      df <- df[, cols_to_keep, drop = FALSE]
+      
+      cat("Filtered data to include", length(cols_to_keep), "columns based on selected indicators\n")
+    } else {
+      warning("Data dictionary not found, cannot filter indicators. Using all columns.")
+    }
+  }
 
   # ---- Write cleaned CSV for Quarto -----------------------------------------
   cleaned_tmp_csv <- fs::file_temp(pattern = "cleaned_", tmp_dir = output_dir_abs, ext = ".csv")
@@ -164,7 +204,9 @@ generate_soil_health_report <- function(
     project_name = project_info$project_name %||% "Soil Health Assessment Project",
     producer_name = project_info$producer_name %||% producer_id,  # Use UI value or fall back to data selection
     project_summary = project_info$project_summary %||% "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, and biological indicators of soil health.",
-    looking_forward = project_info$looking_forward %||% "Thank you for participating in this soil health assessment. This data provides a baseline for understanding your soil's current condition and can help guide future management decisions. We look forward to working with you to improve soil health on your farm."
+    looking_forward = project_info$looking_forward %||% "Thank you for participating in this soil health assessment. This data provides a baseline for understanding your soil's current condition and can help guide future management decisions. We look forward to working with you to improve soil health on your farm.",
+    # Add selected indicators for filtering the indicator table
+    selected_indicators = selected_indicators
   )
 
   timestamp   <- format(Sys.time(), "%Y%m%d_%H%M%S")

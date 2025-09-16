@@ -5,12 +5,56 @@ fig-alt="Less is better scoring curve"}
 
 
 ```{r}
-indicators <- read.csv(
+# Load all indicators
+all_indicators <- read.csv(
   "inst/extdata/indicators.csv",
   check.names = FALSE,
   encoding = "UTF-8",
   strip.white = TRUE
 )
+
+# Create mapping from display names to column names
+indicator_mapping <- list(
+  "Water Stable Aggregates" = "water_stable_aggregates_pct",
+  "Aggregate Stability Index" = "agg_stability_slakes", 
+  "Infiltration (1st inch)" = "infil1_sec",
+  "Infiltration (2nd inch)" = "infil2_sec",
+  "pH" = "ph",
+  "CEC" = "cec_meq_100g",
+  "P" = "p_ppm",
+  "K" = "k_ppm",
+  "Ca" = "ca_ppm",
+  "Mg" = "mg_ppm",
+  "Total N" = "n_pct",
+  "PMN - 28 days" = "pmn_t28",
+  "NO3-N" = "no3",
+  "Nitrate Quick Test" = "nitrate_quick",
+  "Total C" = "c_pct",
+  "Organic Matter" = "om_pct",
+  "CO2 Resp." = "co2_resp_24",
+  "POXC" = "poxc_ppm",
+  "Microbial Biomass" = "microbial_biomass",
+  "Bacterial Biomass" = "bacterial_biomass",
+  "Fungal Biomass" = "fungal_biomass",
+  "AMF Biomass" = "amf_biomass",
+  "Fungi:Bacteria" = "fungi_bacteria_ratio",
+  "Protozoan Biomass" = "protozoa_biomass",
+  "Undifferentiated Biomass" = "undiff_biomass",
+  "Biopore Count" = "biopore_count",
+  "Visible Invert. Count" = "biodiversity_count"
+)
+
+# Filter indicators to only show selected ones
+if (!is.null(params$selected_indicators) && length(params$selected_indicators) > 0) {
+  # Convert selected column names to display names
+  selected_display_names <- names(indicator_mapping)[indicator_mapping %in% params$selected_indicators]
+  
+  # Filter the indicators table
+  indicators <- all_indicators[all_indicators[["Soil Health Indicator"]] %in% selected_display_names, ]
+} else {
+  # If no selection, show all indicators
+  indicators <- all_indicators
+}
 ```
 
 ```{r}

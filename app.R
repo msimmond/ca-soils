@@ -48,6 +48,7 @@ source(file.path("R", "modules", "mod_data_filter.R"))
 source(file.path("R", "modules", "mod_filters.R"))
 source(file.path("R", "modules", "mod_project_info.R"))
 source(file.path("R", "modules", "mod_grouping.R"))
+source(file.path("R", "modules", "mod_indicator_selection.R"))
 source(file.path("R", "modules", "mod_report.R"))
 source(file.path("R", "modules", "mod_about.R"))
 
@@ -132,16 +133,25 @@ ui <- navbarPage(
               div(class = "step-title", "Step 6: Choose Grouping Variable"),
               mod_grouping_ui("grouping")
             )
+          ),
+
+          # 7) Select indicators to include
+          conditionalPanel(
+            condition = "output.data_ready",
+            div(class = "step-section",
+              div(class = "step-title", "Step 7: Select Indicators"),
+              mod_indicator_selection_ui("indicator_selection")
+            )
           )
         ),
         mainPanel(
           width = 8,
 
-          # 7) Show progress, preview the HTML, and expose downloads
+          # 8) Show progress, preview the HTML, and expose downloads
           conditionalPanel(
             condition = "output.data_ready",
             div(class = "step-section",
-              div(class = "step-title", "Step 7: Generate Reports"),
+              div(class = "step-title", "Step 8: Generate Reports"),
               mod_report_ui("report")
             )
           )
@@ -228,7 +238,10 @@ server <- function(input, output, session) {
   # 6) Grouping module: allows selection of grouping variable for averaging
   grouping_result <- mod_grouping_server("grouping", state = state)
   
-  # 7) Report module: uses data_pipeline() for report generation
+  # 7) Indicator Selection module: allows selection of indicators to include
+  mod_indicator_selection_server("indicator_selection", state = state)
+  
+  # 8) Report module: uses data_pipeline() for report generation
   mod_report_server(
     id     = "report",
     cfg    = cfg,
