@@ -106,7 +106,7 @@ sandbox/
 staging/
 organic-think-tank-reports/
 dirt-data-reports/
-ca-soils/
+casoils/
 # Ignore files directory but keep the template
 files/*
 !files/soil-health-template.xlsx
