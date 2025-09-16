@@ -12,6 +12,7 @@ params:
   producer_name: "Producer Name"
   project_summary: "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, and biological indicators of soil health."
   looking_forward: "Thank you for participating in this soil health assessment. This data provides a baseline for understanding your soil's current condition and can help guide future management decisions. We look forward to working with you to improve soil health on your farm."
+  selected_indicators: null
 
 # Shouldn't need to edit the below values unless you want to customize.
 lang: en
@@ -457,9 +458,16 @@ df_table <- dplyr::bind_rows(
 groups <- df_table |>
   split(df_table$measurement_group) |>
   purrr::map(\(x) {
+    # Check if texture column exists, if not use only "Field or Average"
+    id_cols <- if ("texture" %in% names(x)) {
+      c("Field or Average", "texture")
+    } else {
+      "Field or Average"
+    }
+    
     tidyr::pivot_wider(
       x,
-      id_cols = c("Field or Average", Texture),
+      id_cols = id_cols,
       names_from = abbr
     )
   })
@@ -477,7 +485,13 @@ groups <- purrr::map(
     groups,
     !(names(groups) == "Physical")
   ),
-  \(x) dplyr::select(x, -Texture)
+  \(x) {
+    if ("texture" %in% names(x)) {
+      dplyr::select(x, -texture)
+    } else {
+      x
+    }
+  }
 )
 
 # Add physical df back to the averages list
@@ -642,19 +656,23 @@ has_group <- !is.null(params$grouping_var) &&
              params$grouping_var != "" &&
              params$grouping_var %in% names(results_long)
 
-# 1) Keep only texture measures
-tex_long <- results_long |>
-  dplyr::filter(tolower(abbr) %in% c("sand","silt","clay")) |>
-  dplyr::mutate(tex_name = tolower(abbr))
+# Check if texture components are available
+has_texture_components <- any(results_long$abbr %in% c("Sand","Silt","Clay"))
 
-# 2) Tag Your vs Other by producer + year
-tex_long <- tex_long |>
-  dplyr::mutate(
-    category = dplyr::case_when(
-      producer_id == params$producer_id & as.character(year) == as.character(params$year) ~ "Your Fields",
-      TRUE ~ "Other Fields"
+if (has_texture_components) {
+  # 1) Keep only texture measures
+  tex_long <- results_long |>
+    dplyr::filter(abbr %in% c("Sand","Silt","Clay")) |>
+    dplyr::mutate(tex_name = tolower(abbr))
+
+  # 2) Tag Your vs Other by producer + year
+  tex_long <- tex_long |>
+    dplyr::mutate(
+      category = dplyr::case_when(
+        producer_id == params$producer_id & as.character(year) == as.character(params$year) ~ "Your Fields",
+        TRUE ~ "Other Fields"
+      )
     )
-  )
 
 # 3) Aggregation keys (what defines a single point)
 #    Your Fields:  producer + year + (grouping var if present)
@@ -666,35 +684,35 @@ if (has_group) {
   other_keys <- c(other_keys, params$grouping_var)
 }
 
-# 4) Legend/plotting group (what drives symbol/color and legend text)
-#    Your Fields:  the selected grouping var value (e.g., treatment_id)
-#    Other Fields: constant "Other Fields"
-tex_long <- tex_long |>
-  dplyr::mutate(
-    legend_group = dplyr::case_when(
-      category == "Your Fields" & has_group ~ as.character(.data[[params$grouping_var]]),
-      category == "Your Fields"             ~ "Your Fields",
-      TRUE                                   ~ "Other Fields"
+  # 4) Legend/plotting group (what drives symbol/color and legend text)
+  #    Your Fields:  the selected grouping var value (e.g., treatment_id)
+  #    Other Fields: constant "Other Fields"
+  tex_long <- tex_long |>
+    dplyr::mutate(
+      legend_group = dplyr::case_when(
+        category == "Your Fields" & has_group ~ as.character(.data[[params$grouping_var]]),
+        category == "Your Fields"             ~ "Your Fields",
+        TRUE                                   ~ "Other Fields"
+      )
     )
-  )
 
-# 5) Aggregate to one row per (category, key, legend_group, tex_name)
-agg <- tex_long |>
-  dplyr::mutate(
-    key = dplyr::if_else(
-      category == "Your Fields",
-      interaction(!!!rlang::syms(your_keys),  drop = TRUE),
-      interaction(!!!rlang::syms(other_keys), drop = TRUE)
-    )
-  ) |>
-  dplyr::summarize(
-    value = mean(value, na.rm = TRUE),
-    .by = c(category, key, legend_group, tex_name)
-  ) |>
-  tidyr::pivot_wider(names_from = tex_name, values_from = value) |>
-  # plotting_group will be used for color/shape and legend matching
-  dplyr::mutate(plotting_group = legend_group) |>
-  dplyr::select(sand, silt, clay, category, plotting_group)
+  # 5) Aggregate to one row per (category, key, legend_group, tex_name)
+  agg <- tex_long |>
+    dplyr::mutate(
+      key = dplyr::if_else(
+        category == "Your Fields",
+        interaction(!!!rlang::syms(your_keys),  drop = TRUE),
+        interaction(!!!rlang::syms(other_keys), drop = TRUE)
+      )
+    ) |>
+    dplyr::summarize(
+      value = mean(value, na.rm = TRUE),
+      .by = c(category, key, legend_group, tex_name)
+    ) |>
+    tidyr::pivot_wider(names_from = tex_name, values_from = value) |>
+    # plotting_group will be used for color/shape and legend matching
+    dplyr::mutate(plotting_group = legend_group) |>
+    dplyr::select(sand, silt, clay, category, plotting_group)
 
 # Split lists used by the drawing code
 texture_list <- split(agg, agg$category) |>
@@ -709,6 +727,10 @@ make_tt <- nrow(producer_texture) > 0 &&
            any(stats::complete.cases(producer_texture[, c("sand","silt","clay")]))
 
   # Debug prints removed for production
+} else {
+  # If texture components are not available, set make_tt to FALSE
+  make_tt <- FALSE
+}
 ```
 
 ```{r make-texture-triangle, echo=FALSE, message=FALSE, warning=FALSE}
