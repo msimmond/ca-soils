@@ -21,12 +21,8 @@ mod_grouping_ui <- function(id) {
   
   tagList(
     div(class = "form-group",
-      selectInput(
-        ns("grouping_var"),
-        label = "Select grouping variable for averaging and comparisons:",
-        choices = c("Select grouping variable..." = ""),
-        selected = ""
-      ),
+      # Use renderUI instead of static selectInput
+      uiOutput(ns("grouping_var_ui")),
       helpText("Choose which variable to group by for averaging and comparisons. Options are configured in the grouping configuration."),
       
       # Show available values for the selected grouping variable
@@ -70,31 +66,41 @@ mod_grouping_server <- function(id, state) {
       }
     })
     
-    # Update grouping variable choices based on available data and configuration
-    observe({
-      req(state$data)
-      
-      # Get configured grouping options
-      config <- grouping_config()
-      available_columns <- names(state$data)
-      
-      # Filter to only include columns that exist in the data
-      valid_options <- config[config$column_name %in% available_columns, ]
-      
-      # Create choices with labels
-      if (nrow(valid_options) > 0) {
-        choices <- setNames(valid_options$column_name, valid_options$grouping_label)
+    # Render grouping variable dropdown with choices from state
+    output$grouping_var_ui <- renderUI({
+      if (!is.null(state$data)) {
+        # Get configured grouping options
+        config <- grouping_config()
+        available_columns <- names(state$data)
+        
+        # Filter to only include columns that exist in the data
+        valid_options <- config[config$column_name %in% available_columns, ]
+        
+        # Create choices with labels
+        if (nrow(valid_options) > 0) {
+          choices <- setNames(valid_options$column_name, valid_options$grouping_label)
+          selectInput(
+            ns("grouping_var"),
+            "Select grouping variable for averaging and comparisons:",
+            choices = c("Select grouping variable..." = "", choices),
+            selected = ""
+          )
+        } else {
+          selectInput(
+            ns("grouping_var"),
+            "Select grouping variable for averaging and comparisons:",
+            choices = c("No grouping options available" = ""),
+            selected = ""
+          )
+        }
       } else {
-        choices <- c()
+        selectInput(
+          ns("grouping_var"),
+          "Select grouping variable for averaging and comparisons:",
+          choices = c("Please upload data first" = ""),
+          selected = ""
+        )
       }
-      
-      # Update choices
-      updateSelectInput(
-        session,
-        "grouping_var",
-        choices = c("Select grouping variable..." = "", choices),
-        selected = ""
-      )
     })
     
     # Show available values for selected grouping variable
@@ -104,6 +110,19 @@ mod_grouping_server <- function(id, state) {
       values <- unique(state$data[[input$grouping_var]])
       values <- values[!is.na(values)]
       paste(values, collapse = ", ")
+    })
+    
+    # Update state when grouping variable is selected
+    observe({
+      req(input$grouping_var)
+      state$selected_grouping_var <- input$grouping_var
+      
+      # Mark step 6 as valid if a grouping variable is selected
+      if (input$grouping_var != "" && input$grouping_var != "Select grouping variable...") {
+        state$step_6_valid <- TRUE
+      } else {
+        state$step_6_valid <- FALSE
+      }
     })
     
     # Return the selected grouping variable

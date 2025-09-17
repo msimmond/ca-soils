@@ -42,6 +42,7 @@ suppressPackageStartupMessages({
 cfg <- get_cfg()
 
 # --- Module sources (use portable paths) -------------------------------------
+source(file.path("R", "modules", "mod_build_reports.R"))
 source(file.path("R", "modules", "mod_download.R"))
 source(file.path("R", "modules", "mod_data_upload.R"))
 source(file.path("R", "modules", "mod_data_filter.R"))
@@ -64,12 +65,16 @@ ui <- navbarPage(
   
   # Header with styles
   header = tags$head(
+    # Stepper CSS
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/stepper.css"),
+    # Stepper JavaScript
+    tags$script(src = "js/stepper.js"),
+    # Font Awesome for icons
+    tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"),
     tags$style(HTML("
       .btn-group .btn { margin-right: 5px; }
       .progress       { margin: 10px 0;   }
       .alert          { margin: 10px 0;   }
-      .step-section   { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-      .step-title     { font-weight: bold; color: #333; margin-bottom: 10px; }
       .well           { background-color: #f5f5f5; border: 1px solid #e3e3e3; border-radius: 4px; padding: 19px; margin-bottom: 20px; }
     ")),
     if (!is.null(cfg$paths$styles) && file.exists(cfg$paths$styles)) {
@@ -82,82 +87,7 @@ ui <- navbarPage(
   tabPanel(
     title = "Build Reports",
     value = "page_build_reports",
-    fluidPage(
-      sidebarLayout(
-        sidebarPanel(
-          width = 4,
-
-          # 1) Template download and data upload
-          div(class = "step-section",
-            div(class = "step-title", "Step 1: Download Template"),
-            mod_download_ui("download")
-          ),
-
-          # 2) Filter data by site_type, crop, texture
-          div(class = "step-section",
-            div(class = "step-title", "Step 2: Upload Data"),
-            mod_data_upload_ui("data_upload")
-          ),
-
-          # 3) Filter data by site_type, crop, texture
-          conditionalPanel(
-            condition = "output.data_ready",
-            div(class = "step-section",
-              div(class = "step-title", "Step 3: Filter Data"),
-              mod_data_filter_ui("data_filter")
-            )
-          ),
-
-          # 4) Customize project information
-          conditionalPanel(
-            condition = "output.data_ready",
-            div(class = "step-section",
-              div(class = "step-title", "Step 4: Project Information"),
-              mod_project_info_ui("project_info")
-            )
-          ),
-
-          # 5) Choose Producer / Year / Field
-          conditionalPanel(
-            condition = "output.data_ready",
-            div(class = "step-section",
-              div(class = "step-title", "Step 5: Select Data"),
-              mod_filters_ui("filters")
-            )
-          ),
-
-          # 6) Choose grouping variable for averaging
-          conditionalPanel(
-            condition = "output.data_ready",
-            div(class = "step-section",
-              div(class = "step-title", "Step 6: Choose Grouping Variable"),
-              mod_grouping_ui("grouping")
-            )
-          ),
-
-          # 7) Select indicators to include
-          conditionalPanel(
-            condition = "output.data_ready",
-            div(class = "step-section",
-              div(class = "step-title", "Step 7: Select Indicators"),
-              mod_indicator_selection_ui("indicator_selection")
-            )
-          )
-        ),
-        mainPanel(
-          width = 8,
-
-          # 8) Show progress, preview the HTML, and expose downloads
-          conditionalPanel(
-            condition = "output.data_ready",
-            div(class = "step-section",
-              div(class = "step-title", "Step 8: Generate Reports"),
-              mod_report_ui("report")
-            )
-          )
-        )
-      )
-    )
+    mod_build_reports_ui("build_reports")
   ),
   
   # About Tab
@@ -173,174 +103,15 @@ ui <- navbarPage(
 # =============================================================================
 server <- function(input, output, session) {
 
-  # Shared state for the application
-  state <- reactiveValues(
-    data = NULL,
-    data_dictionary = NULL,
-    data_uploaded = FALSE,
+  # Note: State and data pipeline are now managed within the stepper module
 
-    selected_grouping_var = NULL
-  )
-
-  # Single data pipeline that transforms data through all steps
-  data_pipeline <- reactive({
-    req(state$data_uploaded, state$data)
-    
-    # Start with original data
-    current_data <- state$data
-    
-    # Step 1: Apply filters based on filter configuration
-    filter_config <- read.csv("config/filter-config.csv", stringsAsFactors = FALSE)
-    
-    for (i in 1:nrow(filter_config)) {
-      col_name <- filter_config$column_name[i]
-      filter_input_id <- paste0("data_filter-", col_name, "_filter")
-      
-      if (col_name %in% names(current_data) && !is.null(input[[filter_input_id]])) {
-        if (input[[filter_input_id]] != "all") {
-          current_data <- current_data[current_data[[col_name]] == input[[filter_input_id]], , drop = FALSE]
-        }
-      }
-    }
-    
-    # Step 2: Apply producer/year/field selection (if selected)
-    if (!is.null(input$`filters-producer`) && input$`filters-producer` != "" && 
-        !is.null(input$`filters-year`) && input$`filters-year` != "" &&
-        input$`filters-year` != "NULL") {  # Additional check for "NULL" string
-      current_data <- current_data[
-        current_data$producer_id == input$`filters-producer` & 
-        current_data$year == input$`filters-year`, , drop = FALSE
-      ]
-      
-      # Apply field filter if specified
-      if (!is.null(input$`filters-field`) && input$`filters-field` != "all" && "field_id" %in% names(current_data)) {
-        current_data <- current_data[current_data$field_id == input$`filters-field`, , drop = FALSE]
-      }
-    }
-    
-    return(current_data)
-  })
-
-  # 1) Download module: handles template download only
-      mod_download_server("download", cfg = cfg, state = state)
-
-  # 2) Data Upload module: handles data upload and validation
-  mod_data_upload_server("data_upload", state = state)
-  
-  # 3) Data Filter module: handles data filtering by site_type, crop, texture
-  mod_data_filter_server("data_filter", state = state)
-  
-  # 4) Project Info module: allows customization of project text
-  mod_project_info_server("project_info", state = state)
-  
-  # 5) Filters module: provides selection inputs (no server logic needed)
-  
-  # 6) Grouping module: allows selection of grouping variable for averaging
-  grouping_result <- mod_grouping_server("grouping", state = state)
-  
-  # 7) Indicator Selection module: allows selection of indicators to include
-  mod_indicator_selection_server("indicator_selection", state = state)
-  
-  # 8) Report module: uses data_pipeline() for report generation
-  mod_report_server(
-    id     = "report",
-    cfg    = cfg,
-    state  = state,
-    data_pipeline = data_pipeline
-  )
+  # Main stepper module that manages all 8 steps
+  stepper_state <- mod_build_reports_server("build_reports")
   
   # About module
   mod_about_server("about")
 
-  # Update state with selected grouping variable
-  observe({
-    req(grouping_result())
-    state$selected_grouping_var <- grouping_result()
-  })
-
-  # Output for conditional visibility
-  output$data_ready <- reactive({
-    state$data_uploaded && !is.null(state$data)
-  })
-  outputOptions(output, "data_ready", suspendWhenHidden = FALSE)
-
-
-
-
-
-  # Populate producer choices based on filtered data (only once when data is loaded)
-  observe({
-    req(state$data_uploaded, state$data)
-    df <- state$data  # Use original data, not filtered data
-    cat("Producer population - initial data rows:", nrow(df), "\n")
-    if (nrow(df) > 0 && "producer_id" %in% names(df)) {
-      producers <- sort(unique(df$producer_id))
-      cat("Producer population - unique producers:", producers, "\n")
-      cat("Producer population - setting initial choices\n")
-      updateSelectInput(
-        session, "filters-producer",
-        choices = c("Select producer..." = "", producers),
-        selected = ""
-      )
-    }
-  })
-
-  # Populate year choices based on producer selection
-  observe({
-    req(input$`filters-producer`, input$`filters-producer` != "")
-    df <- state$data  # Use original data, not filtered data
-    cat("Year population - producer:", input$`filters-producer`, "\n")
-    if (nrow(df) > 0 && all(c("producer_id", "year") %in% names(df))) {
-      yrs <- df$year[df$producer_id == input$`filters-producer`]
-      if (is.character(yrs)) {
-        yrs <- unique(trimws(yrs))
-        suppressWarnings({
-          yrs_num <- as.integer(yrs)
-        })
-        if (!anyNA(yrs_num)) yrs <- yrs_num
-      }
-      yrs <- sort(unique(yrs), na.last = TRUE)
-      cat("Year population - available years:", yrs, "\n")
-      cat("Year population - updating choices\n")
-      updateSelectInput(
-        session, "filters-year",
-        choices = c("Select year..." = "", yrs),
-        selected = ""
-      )
-      cat("Year population - set to empty selection\n")
-    }
-  })
-
-  # Populate field choices based on producer/year selection
-  observe({
-    req(data_pipeline(), input$`filters-producer`, input$`filters-year`)
-    df <- data_pipeline()
-    if (nrow(df) > 0 && all(c("producer_id", "year") %in% names(df))) {
-      sub <- df[df$producer_id == input$`filters-producer` & df$year == input$`filters-year`, , drop = FALSE]
-      
-      if (!"field_id" %in% names(sub)) {
-        updateSelectInput(session, "filters-field", choices = c("All fields" = "all"), selected = "all")
-        return()
-      }
-      
-      fields <- sort(unique(sub$field_id))
-      field_choices <- c("All fields" = "all", setNames(fields, fields))
-      updateSelectInput(session, "filters-field", choices = field_choices, selected = "all")
-    }
-  })
-
-  # Update shared state when selections change
-  observeEvent(input$`filters-producer`, {
-    state$selected_producer <- input$`filters-producer`
-  })
-  
-  observeEvent(input$`filters-year`, {
-    state$selected_year <- input$`filters-year`
-  })
-  
-  observeEvent(input$`filters-field`, {
-    state$selected_field <- input$`filters-field`
-  })
+  # Note: All data handling, filtering, and state management is now done within the stepper module
 
 
 }
