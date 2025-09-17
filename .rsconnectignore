@@ -6,8 +6,8 @@ README.md
 !quarto/*.qmd
 !quarto/*.md
 
-# Ignore the casoils source directory (we only need the .tar.gz)
-ca-soils/
+# Ignore the casoils source directory (install from public GitHub repo)
+casoils/
 dirt-data-reports/
 organic-think-tank-reports/
 
@@ -18,3 +18,20 @@ man/figures/
 # Ignore any README files that might be in subdirectories
 **/README.Rmd
 **/README.md
+
+# Ignore git submodules and large files
+.git/
+.gitmodules
+
+# Ignore old generated reports
+quarto/old reports/
+quarto/*.html
+quarto/*.docx
+
+# Ignore renv library (packages are installed on server)
+renv/library/
+
+# Ignore any large data files
+*.csv
+!data/*.csv
+!config/*.csv
