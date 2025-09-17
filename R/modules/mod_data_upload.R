@@ -103,6 +103,10 @@ mod_data_upload_server <- function(id, cfg, state) {
           state$data_dictionary <- uploaded_data_dictionary
           state$data_uploaded <- TRUE
           
+          
+          # Mark step 2 as valid for stepper
+          state$step_2_valid <- TRUE
+          
         } else {
           # Validation failed - show errors
           show_validation_error("Please review the following errors and re-upload:")

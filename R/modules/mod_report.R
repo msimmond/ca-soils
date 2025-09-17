@@ -65,7 +65,7 @@ mod_report_ui <- function(id) {
     tags$hr(),
 
     conditionalPanel(
-      condition = "output.report_status != 'ready'",
+      condition = "output.show_status",
       ns = ns,
       div(class = "alert alert-info", id = ns("status_box"),
           textOutput(ns("status_text")))
@@ -317,6 +317,14 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
 
     output$show_progress <- reactive({ FALSE })
     outputOptions(output, "show_progress", suspendWhenHidden = FALSE)
+    
+    output$show_status <- reactive({ 
+      # Only show status box when there's a meaningful status to display
+      result <- report_result()
+      if (is.null(result)) return(FALSE)  # Don't show "Ready to generate" message
+      return(TRUE)  # Show status for success/error
+    })
+    outputOptions(output, "show_status", suspendWhenHidden = FALSE)
 
     output$has_report <- reactive({
       !is.null(report_result()) && identical(report_result()$status, "success")
