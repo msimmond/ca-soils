@@ -20,7 +20,7 @@ mod_about_ui <- function(id) {
         class = "row",
         div(
           class = "col-12",
-          h2("About California Soil Health Reports", style = "color: #2c3e50; margin-bottom: 30px;"),
+          h2("About California Soil Health Reports", style = "color: #2c3e50; margin-bottom: 20px;"),
           hr()
         )
       ),

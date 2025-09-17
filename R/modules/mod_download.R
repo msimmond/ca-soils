@@ -89,13 +89,13 @@ mod_download_server <- function(id, cfg, state) {
           p("Download the template and open it in Excel or Google Sheets."),
           
           h5("2. Fill Out the Data Sheet"),
-          p("Replace the example data with your actual soil health measurements:"),
+          p("Enter your soil health measurements in the appropriate columns:"),
           tags$ul(
-            tags$li("Each row represents one soil sample"),
+            tags$li("Each row represents one soil sample, excluding the top header row"),
             tags$li("Required columns: year, sample_id, producer_id, field_id"),
             tags$li(tags$strong("sample_id is REQUIRED and must be unique for each sample")),
             tags$li("Add your measurement results in the appropriate columns"),
-            tags$li("Delete columns for measurements you don't have")
+            tags$li("Extra columns will be ignored by the app")
           ),
           
           h5("3. Update the Data Dictionary"),
@@ -115,7 +115,8 @@ mod_download_server <- function(id, cfg, state) {
             tags$li("Texture is required for all samples"),
             tags$li("Coordinates are optional but enable mapping features"),
             tags$li("Sample IDs must be unique"),
-            tags$li("Producer IDs group samples for report generation")
+            tags$li("Producer ID and year identify your samples for the report"),
+            tags$li("Grouping variables (optional): Include field_id or treatment_id columns if you want to compare individual fields/treatments in your report")
           )
         )
       ))

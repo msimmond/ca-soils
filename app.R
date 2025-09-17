@@ -56,12 +56,16 @@ source(file.path("R", "modules", "mod_about.R"))
 # =============================================================================
 # UI
 # =============================================================================
-ui <- navbarPage(
-  title = "California Soil Health Reports",
-  windowTitle = "California Soil Health Reports",
-  id = "main_page",
-  collapsible = TRUE,
-  selected = "page_build_reports",
+  ui <- navbarPage(
+    title = div(
+      style = "display: flex; align-items: center; gap: 10px;",
+      img(src = "logo.png", height = "50px"),
+      span("California Soil Health Reports", style = "color: #8b4513; font-weight: bold; font-size: 22px;")
+    ),
+    windowTitle = "California Soil Health Reports",
+    id = "main_page",
+    collapsible = TRUE,
+    selected = "page_build_reports",
   
   # Header with styles
   header = tags$head(
@@ -75,7 +79,25 @@ ui <- navbarPage(
       .btn-group .btn { margin-right: 5px; }
       .progress       { margin: 10px 0;   }
       .alert          { margin: 10px 0;   }
-      .well           { background-color: #f5f5f5; border: 1px solid #e3e3e3; border-radius: 4px; padding: 19px; margin-bottom: 20px; }
+      .well           { background-color: #f8f6f3; border: 1px solid #d4a574; border-radius: 4px; padding: 19px; margin-bottom: 20px; }
+      .btn-primary, .btn.btn-primary    { background-color: #F1B434; border-color: #F1B434; }
+      .btn-primary:hover, .btn.btn-primary:hover { background-color: #9FC9E4; border-color: #9FC9E4; }
+      .btn-secondary, .btn.btn-secondary  { background-color: #F1B434; border-color: #F1B434; color: white; }
+      .btn-secondary:hover, .btn.btn-secondary:hover { background-color: #9FC9E4; border-color: #9FC9E4; color: white; }
+      .btn-outline-primary, .btn.btn-outline-primary { background-color: transparent; border-color: #F1B434; color: #F1B434; }
+      .btn-outline-primary:hover, .btn.btn-outline-primary:hover { background-color: #F1B434; border-color: #F1B434; color: white; }
+      .btn-outline-secondary, .btn.btn-outline-secondary { background-color: transparent; border-color: #F1B434; color: #F1B434; }
+      .btn-outline-secondary:hover, .btn.btn-outline-secondary:hover { background-color: #F1B434; border-color: #F1B434; color: white; }
+      .btn-success    { background-color: #6bb6ff; border-color: #6bb6ff; }
+      .btn-success:hover { background-color: #F1B434; border-color: #F1B434; }
+      .navbar-default { background-color: #f8f6f3; border-color: #d4a574; padding-top: 5px; padding-bottom: 5px; }
+      .navbar-default .navbar-brand { color: #8b4513; font-weight: bold; padding: 5px 15px; }
+      .navbar-default .navbar-nav > li > a { color: #8b4513; }
+      .navbar-default .navbar-nav > .active > a { background-color: #5A8B3A; color: white; }
+      .navbar-default .navbar-nav > .active > a:hover { background-color: #6bb6ff; color: white; }
+      .step-item { opacity: 0.4; transition: opacity 0.3s ease; }
+      .step-item.active { opacity: 1; }
+      .step-item.completed { opacity: 0.7; }
     ")),
     if (!is.null(cfg$paths$styles) && file.exists(cfg$paths$styles)) {
       # Allow project-branded CSS defined in config.yml (paths.styles)

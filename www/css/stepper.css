@@ -7,11 +7,11 @@
   width: 250px;
   padding: 20px;
   padding-top: 40px;
-  border-right: 2px solid #eeeeee;
+  border-right: 2px solid #d4a574;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background-color: #fafafa;
+  background-color: #f8f6f3;
   min-height: 100vh;
 }
 
@@ -25,10 +25,11 @@
   border-radius: 8px;
   transition: all 0.3s ease;
   position: relative;
+  opacity: 0.4;
 }
 
 .step:hover {
-  background-color: #f0f0f0;
+  background-color: #f0ede7;
 }
 
 /* Step Circle */
@@ -39,23 +40,31 @@
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  background-color: #e0ddd9;
-  color: #635b4b87;
+  background-color: #E5AF3C;
+  color: #8b4513;
   font-size: 14px;
   flex-shrink: 0;
   transition: all 0.3s ease;
 }
 
 /* Active Step */
+.step.active {
+  opacity: 1;
+}
+
 .step.active .step-circle {
-  background-color: transparent;
-  color: #603916;
-  border: 2px #603916 solid;
+  background-color: #E5AF3C;
+  color: #8b4513;
+  border: 2px #E5AF3C solid;
 }
 
 /* Completed Step */
+.step.completed {
+  opacity: 0.7;
+}
+
 .step.completed .step-circle {
-  background-color: #023B2C;
+  background-color: #6bb6ff;
   color: white;
 }
 
@@ -65,8 +74,9 @@
 
 /* Disabled Step */
 .step.disabled .step-circle {
-  background-color: #e0ddd9;
-  color: #635b4b87;
+  background-color: #E5AF3C;
+  color: #8b4513;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 

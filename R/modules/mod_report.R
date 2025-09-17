@@ -202,8 +202,6 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
         return(list(status = "error", path = NULL, error = "Please select a producer."))
       if (is.null(state$selected_year) || state$selected_year == "")
         return(list(status = "error", path = NULL, error = "Please select a year."))
-      if (is.null(state$selected_grouping_var) || state$selected_grouping_var == "")
-        return(list(status = "error", path = NULL, error = "Please select a grouping variable."))
 
       df        <- state$data
       producer  <- state$selected_producer
