@@ -11,7 +11,7 @@ params:
   project_name: "Soil Health Assessment Project"
   producer_name: "Producer Name"
   project_summary: "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, and biological indicators of soil health."
-  looking_forward: "Thank you for participating in this soil health assessment. This data provides a baseline for understanding your soil's current condition and can help guide future management decisions. We look forward to working with you to improve soil health on your farm."
+  looking_forward: ""
   selected_indicators: null
 
 # Shouldn't need to edit the below values unless you want to customize.
@@ -354,9 +354,8 @@ producer <- producer_cols |>
 # In case of multiple farm names, grab first one
 #producer$farm_name <- if (producer$farm_name > 1) producer$farm_name[[1]]
 
-# Remove measurements that producer did not have tested
-results_long <- results_long |>
-  dplyr::filter(measurement %in% producer_samples$measurement)
+# Keep all measurements for plotting - don't filter by producer's measurements
+# (This allows "Other Fields" to show all available measurements from other producers)
 ```
 
 <!-- GIS data prep -->
@@ -400,7 +399,7 @@ if (!is.null(params$grouping_var) && params$grouping_var != "" && params$groupin
       .by = c(measurement_group, abbr)
     ) |>
     dplyr::mutate(
-      `Field or Average` = "Producer Average"
+      `Field or Average` = "Your Fields"
     )
 }
 
@@ -554,18 +553,31 @@ table_list <- list2DF(
 
 ```{r prep-df-plot}
 # Prep df for texture triangle and strip plots
+# Add flag to identify "Your Fields" before summarization
+results_long <- results_long |>
+  dplyr::mutate(
+    your_flag = producer_id == params$producer_id &
+                as.character(year) == as.character(params$year)
+  )
+
 # Group by measurement metadata + selected grouping variable (NOT sample_id)
 group_cols <- c("measurement", "measurement_group", "abbr", "unit", "abbr_unit")
 if (!is.null(params$grouping_var) && params$grouping_var %in% names(results_long)) {
   group_cols <- c(group_cols, params$grouping_var)
+} else {
+  # When no grouping variable, group by producer_id and year to create separate dots
+  group_cols <- c(group_cols, "producer_id", "year")
 }
 
-# Calculate averages by group
+# Calculate averages by group, carrying through the your_flag
 results_long_summary <- results_long |>
   dplyr::summarize(
     value = mean(value, na.rm = TRUE),
+    your_flag = any(your_flag),   # Carry the flag through summarization
     .by = all_of(group_cols)
-  ) 
+  )
+
+# Debug code removed - issue identified and fixed 
 
 # Create plot dataframe with simple category assignment
 df_plot <- results_long_summary |>
@@ -589,26 +601,12 @@ df_plot <- df_plot |>
     sample_id = paste0("group_", row_number())  # Unique ID for each aggregated group
   )
 
-# Add category column based on effective grouping variable
-if (effective_grouping_var %in% names(producer) && 
-    length(producer[[effective_grouping_var]]) > 0) {
-  
-  df_plot <- df_plot |>
-    dplyr::mutate(
-      category = dplyr::case_when(
-        .data[[effective_grouping_var]] %in% producer[[effective_grouping_var]] ~ "Your Fields",
-        TRUE ~ "Other Fields"
-      ),
-      category = factor(category, levels = c("Your Fields", "Other Fields"))
-    )
-} else {
-  # Fallback: mark everything as "Other Fields"
-  df_plot <- df_plot |>
-    dplyr::mutate(
-      category = "Other Fields",
-      category = factor(category, levels = c("Your Fields", "Other Fields"))
-    )
-}
+# Add category column using the your_flag
+df_plot <- df_plot |>
+  dplyr::mutate(
+    category = ifelse(your_flag, "Your Fields", "Other Fields"),
+    category = factor(category, levels = c("Your Fields", "Other Fields"))
+  )
 
 # Add plotting_group column for colors/symbols
 if (!is.null(params$grouping_var) && params$grouping_var != "" && params$grouping_var %in% names(df_plot)) {
@@ -643,7 +641,7 @@ df_plot <- df_plot[order(df_plot$category, decreasing = TRUE), ]
 # Normalize legend categories ("Your Fields" / "Other Fields") once
 df_plot <- df_plot |>
   dplyr::mutate(
-    category = ifelse(category %in% c("Your fields","Your Fields"), "Your Fields",
+    category = ifelse(category %in% c("Your fields","Your Fields", "Producer Average"), "Your Fields",
                       ifelse(category %in% c("Other fields","Other Fields"), "Other Fields", category)),
     category = factor(category, levels = c("Your Fields", "Other Fields"))
   )
@@ -687,14 +685,24 @@ if (has_group) {
   # 4) Legend/plotting group (what drives symbol/color and legend text)
   #    Your Fields:  the selected grouping var value (e.g., treatment_id)
   #    Other Fields: constant "Other Fields"
-  tex_long <- tex_long |>
-    dplyr::mutate(
-      legend_group = dplyr::case_when(
-        category == "Your Fields" & has_group ~ as.character(.data[[params$grouping_var]]),
-        category == "Your Fields"             ~ "Your Fields",
-        TRUE                                   ~ "Other Fields"
+  # Create legend_group column using if/else to avoid case_when evaluation issues
+  if (has_group && !is.null(params$grouping_var) && params$grouping_var != "") {
+    tex_long <- tex_long |>
+      dplyr::mutate(
+        legend_group = dplyr::case_when(
+          category == "Your Fields" ~ as.character(.data[[params$grouping_var]]),
+          TRUE ~ "Other Fields"
+        )
       )
-    )
+  } else {
+    tex_long <- tex_long |>
+      dplyr::mutate(
+        legend_group = dplyr::case_when(
+          category == "Your Fields" ~ "Your Fields",
+          TRUE ~ "Other Fields"
+        )
+      )
+  }
 
   # 5) Aggregate to one row per (category, key, legend_group, tex_name)
   agg <- tex_long |>
