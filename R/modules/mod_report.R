@@ -203,10 +203,14 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
       if (is.null(state$selected_year) || state$selected_year == "")
         return(list(status = "error", path = NULL, error = "Please select a year."))
 
+      # Use filtered data for report generation - this ensures both plots show only the filtered dataset
+      # but we still distinguish "Your Fields" vs "Other Fields" within that filtered dataset
       df        <- state$data
+      
       producer  <- state$selected_producer
       year_chr  <- as.character(state$selected_year)   # normalize to character
       grouping  <- state$selected_grouping_var
+      
 
       # Validate against data
       v <- validate_producer_year_choice(df, producer, year_chr)
@@ -214,6 +218,12 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
         return(list(status = "error", path = NULL, error = v$msg))
       }
 
+      # Clear any existing cache to ensure we use fresh data
+      if (fs::dir_exists(cache_dir)) {
+        fs::dir_delete(cache_dir)
+        fs::dir_create(cache_dir)
+      }
+      
       # Stable hash & CSV path
       df_hash <- compute_df_hash(df)
       config_hash <- if (requireNamespace("digest", quietly = TRUE)) {

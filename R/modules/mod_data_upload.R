@@ -99,7 +99,9 @@ mod_data_upload_server <- function(id, cfg, state) {
           attr(uploaded_data, "measurement_info") <- uploaded_data_dictionary
           
           # Update the shared state
-          state$data <- uploaded_data
+          # Store both original and filtered data
+          state$data_unfiltered <- uploaded_data  # Keep original for report generation
+          state$data <- uploaded_data             # This will be filtered by Step 3
           state$data_dictionary <- uploaded_data_dictionary
           state$data_uploaded <- TRUE
           
