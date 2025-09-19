@@ -42,10 +42,51 @@ mod_download_ui <- function(id) {
         class = "btn-primary",
         style = "width: 100%; margin-bottom: 10px;"
       ),
-      actionLink(
-        ns("show_template_help"),
-        "View Template Instructions",
-        icon = icon("info-circle")
+      
+      # Tabbed interface for template instructions
+      tabsetPanel(
+        id = ns("template_tabs"),
+        type = "tabs",
+        tabPanel(
+          "How to Use This App",
+          div(
+            style = "max-height: 500px; overflow-y: auto; padding: 10px;",
+            h4("Complete Workflow Guide"),
+            
+            h5("📋 Step 1: Download Template"),
+            p("Download the Excel template and fill it out with your soil health data. Each row represents one soil sample."),
+            
+            h5("📤 Step 2: Upload Your Data"),
+            p("Upload your completed Excel file. The app will validate your data and show any issues that need to be fixed."),
+            
+            h5("🔍 Step 3: Filter Your Data"),
+            p("Use the filters to focus on specific crops, soil textures, or other characteristics. This helps you compare similar conditions."),
+            
+            h5("📝 Step 4: Customize Project Info"),
+            p("Add your project name, summary, and any additional notes that will appear in your report."),
+            
+            h5("👤 Step 5: Select Your Data"),
+            p("Choose the specific producer and year you want to analyze. This determines which samples will be highlighted as 'Your Fields' in the report."),
+            
+            h5("📊 Step 6: Choose Grouping"),
+            p("Select how you want to group your data (by field, treatment, etc.) or choose 'No grouping' for farm-level comparisons."),
+            
+            h5("📄 Step 7: Generate Report"),
+            p("Click 'Generate Report' to create your professional soil health report. This may take a few minutes."),
+            
+            hr(),
+            
+            h5("📋 Template Requirements:"),
+            tags$ul(
+              tags$li(tags$strong("Required columns:"), "year, sample_id, producer_id, field_id"),
+              tags$li(tags$strong("sample_id must be unique"), "for each sample"),
+              tags$li(tags$strong("Texture is required"), "for all samples"),
+              tags$li(tags$strong("Coordinates are optional"), "but enable mapping features"),
+              tags$li("Extra columns will be ignored by the app")
+            ),
+            
+          )
+        )
       )
     )
   )
@@ -74,53 +115,6 @@ mod_download_server <- function(id, cfg, state) {
       }
     )
     
-    # Template help modal
-    observeEvent(input$show_template_help, {
-      showModal(modalDialog(
-        title = "Template Instructions",
-        size = "l",
-        easyClose = TRUE,
-        footer = modalButton("Close"),
-        
-        div(
-          h4("How to Use the Template"),
-          
-          h5("1. Download and Open"),
-          p("Download the template and open it in Excel or Google Sheets."),
-          
-          h5("2. Fill Out the Data Sheet"),
-          p("Enter your soil health measurements in the appropriate columns:"),
-          tags$ul(
-            tags$li("Each row represents one soil sample, excluding the top header row"),
-            tags$li("Required columns: year, sample_id, producer_id, field_id"),
-            tags$li(tags$strong("sample_id is REQUIRED and must be unique for each sample")),
-            tags$li("Add your measurement results in the appropriate columns"),
-            tags$li("Extra columns will be ignored by the app")
-          ),
-          
-          h5("3. Update the Data Dictionary"),
-          p("Make sure the Data Dictionary sheet matches your Data sheet:"),
-          tags$ul(
-            tags$li("Each measurement column in Data must have a corresponding row in Data Dictionary"),
-            tags$li("Update measurement groups, abbreviations, and units as needed")
-          ),
-          
-          h5("4. Save and Upload"),
-          p("Save your completed template and upload it back to this app."),
-          
-          hr(),
-          
-          h5("Important Notes:"),
-          tags$ul(
-            tags$li("Texture is required for all samples"),
-            tags$li("Coordinates are optional but enable mapping features"),
-            tags$li("Sample IDs must be unique"),
-            tags$li("Producer ID and year identify your samples for the report"),
-            tags$li("Grouping variables (optional): Include field_id or treatment_id columns if you want to compare individual fields/treatments in your report")
-          )
-        )
-      ))
-    })
 
     # Handle file upload
     observeEvent(input$file, {

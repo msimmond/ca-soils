@@ -38,21 +38,6 @@ mod_about_ui <- function(id) {
             p("The California Soil Health Reports app is a web-based tool that helps agricultural producers, researchers, and extension professionals generate comprehensive soil health reports from their field data. Simply upload your data, customize your project information, and download reports in HTML or DOCX format.")
           ),
           
-          # How it works
-          div(
-            class = "well",
-            h3("How does it work?", style = "color: #34495e;"),
-            p("The app follows a simple 7-step workflow:"),
-            tags$ol(
-              tags$li("Download the Excel template with standardized data collection fields"),
-              tags$li("Upload your completed data file"),
-              tags$li("Filter your data by site type, crop, and soil texture"),
-              tags$li("Customize project information and summaries"),
-              tags$li("Select specific producer, year, and field data"),
-              tags$li("Choose grouping variables for data analysis"),
-              tags$li("Generate and download your professional soil health report")
-            )
-          ),
           
           # Soil Health Indicators
           div(
