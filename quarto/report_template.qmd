@@ -268,7 +268,6 @@ strip_text_color <- "white"
 # Tidy data into long format and join with data dictionary
 # Only pivot columns that are in the data dictionary (measurements), excluding texture
 measurement_cols <- dictionary$column_name[dictionary$column_name %in% names(data) & dictionary$column_name != "texture"]
-# Debug - Measurement columns to pivot: removed for production
 
 results_long <- data |>
   dplyr::mutate(
@@ -325,7 +324,6 @@ producer_samples <- results_long |>
 
 # Abort if there are no producer samples
 if (nrow(producer_samples) == 0) {
-      # Debug - No producer samples found. Available producers: removed for production
   # Temporarily comment out the error to see what happens
   # cli::cli_abort(c(
   #   "i" = "Update {.code params} in YAML to a valid {.code producer_id} and\
@@ -382,7 +380,6 @@ gis_df <- casoils::prep_for_map(
 ```{r calculate-averages}
 # Calculate averages by the selected grouping variable
 # Handle cases where grouping_var might be NULL or not exist in data
-# Debug - grouping_var info: removed for production
 
 if (!is.null(params$grouping_var) && params$grouping_var != "" && params$grouping_var %in% names(producer_samples)) {
   grower_summary <- producer_samples |>
@@ -560,14 +557,19 @@ results_long <- results_long |>
                 as.character(year) == as.character(params$year)
   )
 
+# Debug: Check filtered data
+
 # Group by measurement metadata + selected grouping variable (NOT sample_id)
 group_cols <- c("measurement", "measurement_group", "abbr", "unit", "abbr_unit")
 if (!is.null(params$grouping_var) && params$grouping_var %in% names(results_long)) {
-  group_cols <- c(group_cols, params$grouping_var)
+  # When grouping variable is selected, group by producer_id + grouping_var to get separate groups for each producer
+  group_cols <- c(group_cols, "producer_id", params$grouping_var)
 } else {
   # When no grouping variable, group by producer_id and year to create separate dots
   group_cols <- c(group_cols, "producer_id", "year")
 }
+
+# Debug: Check grouping columns
 
 # Calculate averages by group, carrying through the your_flag
 results_long_summary <- results_long |>
@@ -575,9 +577,11 @@ results_long_summary <- results_long |>
     value = mean(value, na.rm = TRUE),
     your_flag = any(your_flag),   # Carry the flag through summarization
     .by = all_of(group_cols)
-  )
+  ) |>
+  # Filter out groups that have no data or are invalid
+  dplyr::filter(!is.na(value))
 
-# Debug code removed - issue identified and fixed 
+# Debug: Check summarized data
 
 # Create plot dataframe with simple category assignment
 df_plot <- results_long_summary |>
@@ -607,6 +611,8 @@ df_plot <- df_plot |>
     category = ifelse(your_flag, "Your Fields", "Other Fields"),
     category = factor(category, levels = c("Your Fields", "Other Fields"))
   )
+
+# Debug: Check final categorization
 
 # Add plotting_group column for colors/symbols
 if (!is.null(params$grouping_var) && params$grouping_var != "" && params$grouping_var %in% names(df_plot)) {
@@ -648,7 +654,7 @@ df_plot <- df_plot |>
 ```
 
 ```{r prep-texture-triangle}
-# --- Build texture data from the raw long data (not df_plot) ---
+# --- Build texture data from the same filtered data used for strip plots ---
 
 has_group <- !is.null(params$grouping_var) &&
              params$grouping_var != "" &&
@@ -887,33 +893,34 @@ plot_list <- df_plot |>
         params$grouping_var != "" &&
         params$grouping_var %in% names(group)) {
 
-      # Collapse non-producer groups to "Other Fields" for aesthetics/legend
-      pg <- producer_groups
+      # Use category to determine symbols/colors instead of grouping variable
+      # This ensures "Your Fields" and "Other Fields" get distinct symbols
       group <- group |>
         dplyr::mutate(
-          !!params$grouping_var := ifelse(.data[[params$grouping_var]] %in% pg,
-                                          .data[[params$grouping_var]],
-                                          "Other Fields")
+          plotting_group = dplyr::case_when(
+            category == "Your Fields" ~ .data[[params$grouping_var]],
+            category == "Other Fields" ~ "Other Fields",
+            TRUE ~ "Other Fields"
+          )
         )
 
-      legend_levels <- c(pg, "Other Fields")
-      group[[params$grouping_var]] <- factor(group[[params$grouping_var]],
-                                             levels = legend_levels)
+      legend_levels <- c(producer_groups, "Other Fields")
+      group$plotting_group <- factor(group$plotting_group, levels = legend_levels)
 
       p <- casoils::make_strip_plot(
         group,
         id = sample_id,
-        color = .data[[params$grouping_var]],
-        fill  = .data[[params$grouping_var]],
-        size  = .data[[params$grouping_var]],
-        shape = .data[[params$grouping_var]],
-        alpha = .data[[params$grouping_var]],
+        color = plotting_group,
+        fill  = plotting_group,
+        size  = plotting_group,
+        shape = plotting_group,
+        alpha = plotting_group,
         language = "English"
       )
 
       # Lock styles & order to shared maps
       p <- casoils::set_dynamic_scales(
-        p, group, params$grouping_var, producer_groups,
+        p, group, "plotting_group", producer_groups,
         primary_color = primary_color, other_color = other_color
       ) +
         scale_color_manual(
@@ -934,7 +941,7 @@ plot_list <- df_plot |>
           limits = legend_levels
         ) +
         scale_alpha_manual(
-          values = stats::setNames(c(rep(1, length(pg)), 0.8), legend_levels),
+          values = stats::setNames(c(rep(1, length(producer_groups)), 0.8), legend_levels),
           limits = legend_levels
         )
 

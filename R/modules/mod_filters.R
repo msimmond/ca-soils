@@ -60,8 +60,11 @@ mod_filters_server <- function(id, state) {
     
     # Render producer dropdown with choices from state
     output$producer_ui <- renderUI({
-      if (!is.null(state$data) && "producer_id" %in% names(state$data)) {
-        producers <- sort(unique(state$data$producer_id))
+      # Use filtered data if available, otherwise use original data
+      data_to_use <- if (!is.null(state$filtered_data)) state$filtered_data else state$data
+      
+      if (!is.null(data_to_use) && "producer_id" %in% names(data_to_use)) {
+        producers <- sort(unique(data_to_use$producer_id))
         selectInput(
           ns("producer"),
           "Select Producer:",
@@ -83,8 +86,11 @@ mod_filters_server <- function(id, state) {
       # Force reactivity to producer selection - use the actual input ID
       producer_selected <- input$producer
       
-      if (!is.null(state$data) && !is.null(producer_selected) && producer_selected != "") {
-        years <- sort(unique(state$data$year[state$data$producer_id == producer_selected]))
+      # Use filtered data if available, otherwise use original data
+      data_to_use <- if (!is.null(state$filtered_data)) state$filtered_data else state$data
+      
+      if (!is.null(data_to_use) && !is.null(producer_selected) && producer_selected != "") {
+        years <- sort(unique(data_to_use$year[data_to_use$producer_id == producer_selected]))
         selectInput(
           ns("year"),
           "Select Year:",

@@ -75,5 +75,38 @@ mod_data_filter_server <- function(id, state) {
       
       return(tagList(filter_ui_elements))
     })
+    
+    # Apply filters to data when any filter changes
+    observe({
+      req(state$data_uploaded, state$data)
+      
+      # Read filter configuration
+      filter_config <- read.csv("config/filter-config.csv", stringsAsFactors = FALSE)
+      
+      # Start with original data
+      filtered_data <- state$data
+      
+      # Apply each filter
+      for (i in 1:nrow(filter_config)) {
+        col_name <- filter_config$column_name[i]
+        
+        if (col_name %in% names(filtered_data)) {
+          filter_input_id <- paste0(col_name, "_filter")
+          
+          # Check if the filter input exists and has a value
+          if (!is.null(input[[filter_input_id]]) && input[[filter_input_id]] != "all") {
+            filtered_data <- filtered_data[filtered_data[[col_name]] == input[[filter_input_id]], ]
+          }
+        }
+      }
+      
+      # Update the filtered data in state
+      state$filtered_data <- filtered_data
+      # Also update state$data so dropdowns work correctly
+      state$data <- filtered_data
+      
+      # Mark step 3 as valid if we have data
+      state$step_3_valid <- nrow(filtered_data) > 0
+    })
   })
 } 

@@ -76,10 +76,13 @@ mod_grouping_server <- function(id, state) {
     
     # Render grouping variable dropdown with choices from state
     output$grouping_var_ui <- renderUI({
-      if (!is.null(state$data)) {
+      # Use filtered data if available, otherwise use original data
+      data_to_use <- if (!is.null(state$filtered_data)) state$filtered_data else state$data
+      
+      if (!is.null(data_to_use)) {
         # Get configured grouping options
         config <- grouping_config()
-        available_columns <- names(state$data)
+        available_columns <- names(data_to_use)
         
         # Filter to only include columns that exist in the data
         valid_options <- config[config$column_name %in% available_columns, ]
@@ -113,9 +116,12 @@ mod_grouping_server <- function(id, state) {
     
     # Show available values for selected grouping variable
     output$grouping_values <- renderText({
-      req(input$grouping_var, input$grouping_var != "", input$grouping_var != "no_grouping", state$data)
+      # Use filtered data if available, otherwise use original data
+      data_to_use <- if (!is.null(state$filtered_data)) state$filtered_data else state$data
       
-      values <- unique(state$data[[input$grouping_var]])
+      req(input$grouping_var, input$grouping_var != "", input$grouping_var != "no_grouping", data_to_use)
+      
+      values <- unique(data_to_use[[input$grouping_var]])
       values <- values[!is.na(values)]
       paste(values, collapse = ", ")
     })
