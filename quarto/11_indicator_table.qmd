@@ -1,7 +1,6 @@
-![](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-more.png){width="1.5in"
-fig-alt="More is better scoring curve"}![](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-optimal.png){width="1.5in"
-fig-alt="Optimal range scoring curve"}![](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-less.png){width="1.5in"
-fig-alt="Less is better scoring curve"}
+|                                                   |                                                   |                                                   |
+|:-------------------------------------------------:|:-------------------------------------------------:|:-------------------------------------------------:|
+| ![More is better](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-more.png){width=1.2in} | ![Optimal range](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-optimal.png){width=1.2in} | ![Less is better](https://raw.githack.com/WA-Department-of-Agriculture/soils/main/figures/curve-less.png){width=1.2in} |
 
 
 ```{r}

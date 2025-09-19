@@ -257,7 +257,7 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
       } else NULL
 
       res <- tryCatch({
-        withProgress(message = "Generating report...",
+        withProgress(message = "Generating report... (This may take a few minutes)",
                      detail  = paste("Producer:", producer, "Year:", year_chr),
                      value   = 0, {
           incProgress(0.05, detail = "Validating data...")

@@ -54,7 +54,7 @@ mod_project_info_ui <- function(id) {
         textAreaInput(
           ns("project_summary"),
           label = NULL,
-          value = "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, and biological indicators of soil health.",
+          value = "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, biological, and carbon indicators of soil health.",
           rows = 12,
           placeholder = "Describe your project, thank participants, and provide context..."
         )

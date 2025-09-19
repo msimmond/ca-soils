@@ -10,7 +10,7 @@ params:
   dict_path: null
   project_name: "Soil Health Assessment Project"
   producer_name: "Producer Name"
-  project_summary: "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, and biological indicators of soil health."
+  project_summary: "Thank you for participating in our soil health assessment project. This report provides detailed analysis of soil samples collected from your fields, including physical, chemical, biological, and carbon indicators of soil health."
   looking_forward: ""
   selected_indicators: null
 
@@ -1065,11 +1065,13 @@ has_coords <- ("longitude" %in% names(gis_df)) && ("latitude" %in% names(gis_df)
               all(!is.na(gis_df$longitude)) && all(!is.na(gis_df$latitude))
 
 if (pk_ok && has_coords) {
-  df_sf <- sf::st_as_sf(
-    gis_df,
-    coords = c("longitude", "latitude"),
-    crs = 4326
-  ) |> sf::st_transform(3857)
+  # Deduplicate by coordinates to avoid multiple labels at same location
+  df_sf <- gis_df |>
+    dplyr::distinct(longitude, latitude, .keep_all = TRUE) |>
+    sf::st_as_sf(
+      coords = c("longitude", "latitude"),
+      crs = 4326
+    ) |> sf::st_transform(3857)
 
   df_sf_buffered <- sf::st_buffer(df_sf, dist = 1000)
   buffered_bbox <- sf::st_bbox(df_sf_buffered)
