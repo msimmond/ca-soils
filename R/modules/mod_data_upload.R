@@ -142,76 +142,123 @@ mod_data_upload_server <- function(id, cfg, state) {
         return()
       }
       
-      # Try to validate and read the Excel file
+      # Clear any previous validation messages
+      removeUI(selector = paste0("#", ns("validation_status"), " > *"), multiple = TRUE)
+      
+      # Try to read and validate the Excel file
       tryCatch({
-        # Load validation functions
-        source("R/utils/validation.R")
+        # First, try to read the data regardless of validation
+        uploaded_data <- NULL
+        uploaded_data_dictionary <- NULL
         
-        # Read required fields configuration
-        req_fields <- read.csv("config/required-fields.csv")
-        
-        # Validate the uploaded file
-        validation_results <- validate_data_file(input$file$datapath, req_fields)
-        
-        if (length(validation_results) == 0) {
-          # Validation successful - update state
-          show_validation_success(paste("✅ Data uploaded successfully!", "All validation checks passed."))
-          
-          # Read the validated data
+        # Attempt to read the Excel file
+        tryCatch({
           uploaded_data <- readxl::read_xlsx(input$file$datapath, sheet = "Data")
           uploaded_data_dictionary <- readxl::read_xlsx(input$file$datapath, sheet = "Data Dictionary")
           
           # Attach dictionary to data as attribute (required by template)
           attr(uploaded_data, "measurement_info") <- uploaded_data_dictionary
           
-          # Check for non-numeric values in measurement columns
-          conversion_warnings <- check_numeric_conversions(uploaded_data, uploaded_data_dictionary)
-          
-          # Update the shared state
-          # Store both original and filtered data
-          state$data_unfiltered <- uploaded_data  # Keep original for report generation
-          state$data <- uploaded_data             # This will be filtered by Step 3
+          # Update state with data (even if validation fails)
+          state$data_unfiltered <- uploaded_data
+          state$data <- uploaded_data
           state$data_dictionary <- uploaded_data_dictionary
           state$data_uploaded <- TRUE
           
-          # Show conversion warnings if any
-          if (length(conversion_warnings) > 0) {
-            show_conversion_warnings(conversion_warnings, ns)
-          }
-          
-          # Mark step 2 as valid for stepper
-          state$step_2_valid <- TRUE
-          
-        } else {
-          # Validation failed - show errors
-          show_validation_error("Please review the following errors and re-upload:")
-          
-          error_ui <- div(
-            class = "alert alert-danger",
-            icon("exclamation-triangle"),
-            tags$strong("Validation Errors:"),
-            tags$ul(
-              lapply(validation_results, function(error) {
-                if (is.list(error)) {
-                  lapply(error, function(sub_error) {
-                    tags$li(sub_error)
+        }, error = function(read_error) {
+          show_validation_error(paste("❌ Error reading Excel file:", read_error$message, 
+                                    "\n\nPlease check that your file has 'Data' and 'Data Dictionary' sheets."))
+          return()
+        })
+        
+        # Now try validation if data was read successfully
+        if (!is.null(uploaded_data)) {
+          tryCatch({
+            # Load validation functions
+            source("R/utils/validation.R")
+            
+            # Read required fields configuration using readr for better CSV parsing
+            req_fields <- readr::read_csv("config/required-fields.csv", 
+                                        col_types = readr::cols(.default = "c"),
+                                        locale = readr::locale(encoding = "UTF-8"),
+                                        show_col_types = FALSE)
+            
+            # Convert required column to logical
+            req_fields$required <- as.logical(req_fields$required)
+            
+            
+            
+            # Validate the uploaded file
+            validation_results <- validate_data_file(input$file$datapath, req_fields)
+            
+            if (length(validation_results) == 0) {
+              # Validation successful
+              show_validation_success("✅ Data uploaded successfully! All validation checks passed.")
+              
+              # Check for non-numeric values in measurement columns
+              conversion_warnings <- check_numeric_conversions(uploaded_data, uploaded_data_dictionary)
+              
+              # Show conversion warnings if any
+              if (length(conversion_warnings) > 0) {
+                show_conversion_warnings(conversion_warnings, ns)
+              }
+              
+              # Mark step 2 as valid for stepper
+              state$step_2_valid <- TRUE
+              
+            } else {
+              # Validation failed - show errors and block progression
+              show_validation_error("❌ Data validation failed. Please fix the following issues before proceeding:")
+              
+              error_ui <- div(
+                class = "alert alert-danger",
+                icon("exclamation-triangle"),
+                tags$strong("Validation Errors:"),
+                tags$ul(
+                  lapply(validation_results, function(error) {
+                    if (is.list(error)) {
+                      lapply(error, function(sub_error) {
+                        tags$li(sub_error)
+                      })
+                    } else {
+                      tags$li(error)
+                    }
                   })
-                } else {
-                  tags$li(error)
-                }
-              })
+                ),
+                tags$p(tags$em("Please fix these issues and re-upload your data to continue."))
+              )
+              
+              insertUI(
+                selector = paste0("#", ns("validation_status")),
+                where = "beforeEnd",
+                ui = error_ui
+              )
+              
+              # Block progression - don't mark as valid
+              state$step_2_valid <- FALSE
+            }
+            
+          }, error = function(validation_error) {
+            # Validation function failed - block progression
+            error_details <- paste0(
+              "❌ Data validation failed: ", validation_error$message,
+              "\n\nError details: ", 
+              if (!is.null(validation_error$call)) {
+                paste("Function:", deparse(validation_error$call)[1])
+              } else {
+                "Unknown function"
+              },
+              "\n\nThis usually means there's an issue with the validation configuration or data format.",
+              "\nPlease check your data matches the template format and try again."
             )
-          )
-          
-          insertUI(
-            selector = paste0("#", ns("validation_status")),
-            where = "beforeEnd",
-            ui = error_ui
-          )
+            show_validation_error(error_details)
+            state$step_2_valid <- FALSE
+          })
         }
         
       }, error = function(e) {
-        show_validation_error(paste("Error reading file:", e$message))
+        show_validation_error(paste("❌ Unexpected error:", e$message, 
+                                  "\n\nPlease check your file format and try again."))
       })
     })
 

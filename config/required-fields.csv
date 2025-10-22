@@ -1,10 +1,10 @@
 sheet,var,unique_by,required,data_type,description,validation_rule
 Data,year,-,TRUE,integer,Year of sampling,>= 2000
-Data,sample_id,sample_id,TRUE,character,Unique sample identifier,no_duplicates
+Data,sample_id,sample_id,TRUE,character,Unique sample identifier,no_duplicates,not_empty
 Data,producer_id,-,TRUE,character,Producer/farm identifier,not_empty
 Data,field_id,-,FALSE,character,Field identifier,not_empty
 Data,texture,-,TRUE,character,Soil texture classification,valid_texture
-Data Dictionary,measurement_group,-,TRUE,character,Measurement category (e.g., Physical, Chemical, Biological),not_empty
+Data Dictionary,measurement_group,-,TRUE,character,"Measurement category (e.g., Physical, Chemical, Biological)",not_empty
 Data Dictionary,column_name,-,TRUE,character,Column name in data sheet,not_empty
 Data Dictionary,abbr,-,TRUE,character,Abbreviation for measurement,not_empty
-Data Dictionary,unit,-,TRUE,character,Unit of measurement,not_empty 
+Data Dictionary,unit,-,TRUE,character,Unit of measurement,not_empty
