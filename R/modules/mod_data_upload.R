@@ -53,6 +53,72 @@ mod_data_upload_ui <- function(id) {
 }
 
 # ---------------------------
+# Helper Functions
+# ---------------------------
+
+# Check for non-numeric values in measurement columns
+check_numeric_conversions <- function(df, dictionary) {
+  if (!"column_name" %in% names(dictionary)) return(list())
+  
+  # Get measurement columns from dictionary (exclude texture which is text)
+  measure_cols <- intersect(dictionary$column_name, names(df))
+  measure_cols <- measure_cols[measure_cols != "texture"]  # Exclude texture as it's text data
+  if (length(measure_cols) == 0) return(list())
+  
+  conversion_warnings <- list()
+  
+  for (col in measure_cols) {
+    # Check for non-numeric values
+    original_na <- is.na(df[[col]])
+    numeric_converted <- suppressWarnings(as.numeric(df[[col]]))
+    new_na <- is.na(numeric_converted)
+    
+    # Find values that became NA (were non-numeric)
+    converted_to_na <- !original_na & new_na
+    if (any(converted_to_na)) {
+      non_numeric_values <- unique(df[[col]][converted_to_na])
+      conversion_warnings[[col]] <- list(
+        column = col,
+        count = length(non_numeric_values),
+        values = head(non_numeric_values, 5),
+        total_values = length(non_numeric_values)
+      )
+    }
+  }
+  
+  conversion_warnings
+}
+
+# Show conversion warnings in UI
+show_conversion_warnings <- function(warnings, ns) {
+  warning_ui <- div(
+    class = "alert alert-warning",
+    style = "margin-top: 10px;",
+    icon("exclamation-triangle"),
+    tags$strong("Data Conversion Warnings:"),
+    tags$p("Some non-numeric values were found in numeric measurement columns and converted to missing values:"),
+    tags$ul(
+      lapply(warnings, function(warning) {
+        values_text <- paste(warning$values, collapse = ", ")
+        if (warning$total_values > 5) {
+          values_text <- paste0(values_text, " (and ", warning$total_values - 5, " more)")
+        }
+        tags$li(
+          tags$strong(warning$column), ": ", warning$count, " non-numeric values converted to missing (", values_text, ")"
+        )
+      })
+    ),
+    tags$p(tags$em("These values will be excluded from calculations but won't prevent report generation."))
+  )
+  
+  insertUI(
+    selector = paste0("#", ns("validation_status")),
+    where = "beforeEnd",
+    ui = warning_ui
+  )
+}
+
+# ---------------------------
 # Data Upload Module Server
 # ---------------------------
 mod_data_upload_server <- function(id, cfg, state) {
@@ -98,6 +164,9 @@ mod_data_upload_server <- function(id, cfg, state) {
           # Attach dictionary to data as attribute (required by template)
           attr(uploaded_data, "measurement_info") <- uploaded_data_dictionary
           
+          # Check for non-numeric values in measurement columns
+          conversion_warnings <- check_numeric_conversions(uploaded_data, uploaded_data_dictionary)
+          
           # Update the shared state
           # Store both original and filtered data
           state$data_unfiltered <- uploaded_data  # Keep original for report generation
@@ -105,6 +174,10 @@ mod_data_upload_server <- function(id, cfg, state) {
           state$data_dictionary <- uploaded_data_dictionary
           state$data_uploaded <- TRUE
           
+          # Show conversion warnings if any
+          if (length(conversion_warnings) > 0) {
+            show_conversion_warnings(conversion_warnings, ns)
+          }
           
           # Mark step 2 as valid for stepper
           state$step_2_valid <- TRUE

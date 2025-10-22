@@ -252,8 +252,36 @@ pivot_long_with_dictionary <- function(df, dictionary_path) {
   measure_cols <- intersect(dict$column_name, names(df))
   if (!length(measure_cols)) stop("No measurement columns found in data per dictionary")
 
-  # ensure numeric
-  df[measure_cols] <- lapply(df[measure_cols], function(x) suppressWarnings(as.numeric(x)))
+  # ensure numeric and track conversions
+  conversion_log <- list()
+  df[measure_cols] <- lapply(df[measure_cols], function(x) {
+    # Check for non-numeric values before conversion
+    original_na <- is.na(x)
+    numeric_x <- suppressWarnings(as.numeric(x))
+    new_na <- is.na(numeric_x)
+    
+    # Find values that became NA (were non-numeric)
+    converted_to_na <- !original_na & new_na
+    if (any(converted_to_na)) {
+      non_numeric_values <- unique(x[converted_to_na])
+      conversion_log <<- c(conversion_log, list(non_numeric_values))
+    }
+    
+    numeric_x
+  })
+  
+  # Log conversions if any occurred
+  if (length(conversion_log) > 0) {
+    for (i in seq_along(measure_cols)) {
+      if (i <= length(conversion_log) && length(conversion_log[[i]]) > 0) {
+        col_name <- measure_cols[i]
+        non_numeric_vals <- conversion_log[[i]]
+        message("⚠️  Column '", col_name, "': ", length(non_numeric_vals), " non-numeric values converted to missing: ", 
+                paste(head(non_numeric_vals, 5), collapse = ", "), 
+                if (length(non_numeric_vals) > 5) paste(" (and", length(non_numeric_vals) - 5, "more)") else "")
+      }
+    }
+  }
 
   # long
   long <- tidyr::pivot_longer(
