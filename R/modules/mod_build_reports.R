@@ -291,6 +291,8 @@ mod_build_reports_server <- function(id) {
         next_disabled <- TRUE
       } else if (state$current_step == 5 && !state$step_5_valid) {
         next_disabled <- TRUE
+      } else if (state$current_step == 6 && !state$step_6_valid) {
+        next_disabled <- TRUE
       }
       
       next_btn <- actionButton(

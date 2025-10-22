@@ -71,7 +71,10 @@ mod_download_ui <- function(id) {
             h5("📊 Step 6: Choose Grouping"),
             p("Select how you want to group your data (by field, treatment, etc.) or choose 'No grouping' for farm-level comparisons."),
             
-            h5("📄 Step 7: Generate Report"),
+            h5("📈 Step 7: Select Indicators"),
+            p("Choose which soil health indicators to include in your report. You can select from physical, chemical, biological, and carbon indicators."),
+            
+            h5("📄 Step 8: Generate Report"),
             p("Click 'Generate Report' to create your professional soil health report. This may take a few minutes."),
             
             hr(),
