@@ -34,7 +34,6 @@ source("global.R")
 # --- Lightweight extras used across modules (quiet startup) -------------------
 suppressPackageStartupMessages({
   library(DT)       # data preview widgets
-  library(memoise)  # caching (used inside mod_report)
   library(digest)   # hashing (used inside mod_report)
 })
 

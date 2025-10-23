@@ -170,27 +170,20 @@ mod_report_server <- function(id, cfg, state, data_pipeline) {
       list(ok = TRUE, msg = NULL)
     }
 
-    # Memoised wrapper around the Quarto render call.
-    # Keys: (df_hash, producer_id, year_chr, grouping_var, config_hash, project_info_hash, selected_indicators_hash)
-    generate_report_memoized <- memoise::memoise(
-      function(df_hash, producer_id, year_chr, grouping_var, config_hash, tmp_csv_path, out_dir, dict_path = NULL, project_info_hash = NULL, selected_indicators_hash = NULL) {
-        generate_soil_health_report(
-          data_path    = tmp_csv_path,
-          producer_id  = producer_id,
-          year         = year_chr,          # pass character; template handles it
-          grouping_var = grouping_var,
-          config       = get_cfg(),         # config lives in options()
-          output_dir   = out_dir,
-          dict_path    = dict_path,
-          project_info = if (!is.null(project_info_hash)) state$project_info else NULL,
-          selected_indicators = if (!is.null(selected_indicators_hash)) state$selected_indicators else NULL
-        )
-      },
-      cache = memoise::cache_memory()
-    )
-    
-    # Clear any existing cache to ensure we use the updated function
-    memoise::forget(generate_report_memoized)
+    # Simple wrapper around the Quarto render call (memoization disabled to avoid warnings)
+    generate_report_memoized <- function(df_hash, producer_id, year_chr, grouping_var, config_hash, tmp_csv_path, out_dir, dict_path = NULL, project_info_hash = NULL, selected_indicators_hash = NULL) {
+      generate_soil_health_report(
+        data_path    = tmp_csv_path,
+        producer_id  = producer_id,
+        year         = year_chr,          # pass character; template handles it
+        grouping_var = grouping_var,
+        config       = get_cfg(),         # config lives in options()
+        output_dir   = out_dir,
+        dict_path    = dict_path,
+        project_info = if (!is.null(project_info_hash)) state$project_info else NULL,
+        selected_indicators = if (!is.null(selected_indicators_hash)) state$selected_indicators else NULL
+      )
+    }
 
     # --------------------------
     # Button → render report

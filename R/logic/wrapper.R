@@ -257,33 +257,5 @@ generate_soil_health_report <- function(
 
 
 # -----------------------------------------------------------------------------
-# Memoized Variant
+# Memoization removed - handled in mod_report.R only
 # -----------------------------------------------------------------------------
-# This wrapper caches results for identical inputs (producer/year/grouping/data).
-# If the same report is requested again, the cached HTML is reused without
-# re-running Quarto, which can save significant time.
-# -----------------------------------------------------------------------------
-if (requireNamespace("memoise", quietly = TRUE)) {
-  generate_report_memoized <- memoise::memoise(function(
-    data_path,
-    producer_id,
-    year,
-    grouping_var = NULL,
-    config = NULL,
-    output_dir = NULL,
-    dict_path = NULL,
-    project_info = NULL  # NEW: optional project info
-  ) {
-    if (is.null(config)) config <- get_cfg()
-    generate_soil_health_report(
-      data_path    = data_path,
-      producer_id  = producer_id,
-      year         = year,
-      grouping_var = grouping_var,
-      config       = config,
-      output_dir   = output_dir,
-      dict_path    = dict_path,
-      project_info = project_info  # NEW: pass through project info
-    )
-  })
-}

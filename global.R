@@ -91,7 +91,7 @@ invisible(system2(quarto_bin, args = "--version", stdout = TRUE, stderr = TRUE))
 #   • Production (default): library(casoils) loads the version pinned by renv
 
 use_local_casoils <- identical(Sys.getenv("USE_LOCAL_CASOILS", "0"), "1")
-local_casoils_dir <- path_expand("~/projects/UCANR/ca-soil-health-reports-clean/casoils")
+local_casoils_dir <- path_expand("~/projects/UCANR/ca-soil-health-reports-clean/casoils_minimal")
 
 if (use_local_casoils && dir_exists(local_casoils_dir)) {
   if (!requireNamespace("devtools", quietly = TRUE)) {
