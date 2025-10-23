@@ -1,0 +1,78 @@
+Package: casoils
+Title: Soil Health Reporting Tools for California (Based on 'soils')
+Version: 0.1.0
+Authors@R: c(
+    person("Jadey N", "Ryan", , "jryan@agr.wa.gov", role = "aut",
+      comment = c(ORCID = "0009-0004-5998-4697", "Original author of soils package")
+      ),
+    person("Molly", "McIlquham", role = "aut",
+      comment = c(ORCID = "0000-0002-0152-969X", "Contributor to soils package")
+      ),
+    person("Kwabena A", "Sarpong", role = "aut",
+      comment = "Contributor to soils package"),
+    person("Leslie M", "Michel", role = "aut",
+      comment = "Contributor to soils package"),
+    person("Teal S", "Potter", role = "aut",
+      comment = c(ORCID = "0000-0002-4884-2720", "Contributor to soils package")
+      ),
+    person("Deirdre", "Griffin LaHue", role = "aut",
+      comment = c(ORCID = "0000-0001-5711-797X", "Contributor to soils package")
+      ),
+    person("Dani L", "Gelardi", role = "aut",
+      comment = c(ORCID = "0000-0002-5015-8119", "Contributor to soils package")
+      ),
+    person("Washington State Department of Agriculture", role = c("cph", "fnd")),
+    person("Maegen", "Simmonds", , "maegen.simmonds@gmail.com", role = c("aut", "cre"),
+      comment = "Author and maintainer of California-specific adaptation")
+  )
+Description: An adaptation and extension of the 'soils' R package originally
+    developed by the Washington State Department of Agriculture. Provides
+    California-specific functionality for soil health reporting and adds
+    new methods, including `set_dynamic_scales()` for dynamic grouping.
+    This package preserves and builds upon the methodology of 'soils',
+    while tailoring reports and utilities for UCANR and the California Farm
+    Demonstration Network context.
+License: MIT + file LICENSE
+URL: https://github.com/msimmond/ca-soils
+BugReports: https://github.com/msimmond/ca-soils/issues
+Depends: 
+    R (>= 4.1.0)
+Imports: 
+    cli,
+    dplyr,
+    flextable (>= 0.9.6),
+    fs,
+    ggiraph,
+    ggplot2 (>= 3.5.0),
+    ggrepel,
+    ggtext,
+    glue,
+    htmltools,
+    htmlwidgets,
+    knitr,
+    leaflet,
+    maptiles,
+    officer,
+    purrr,
+    quarto,
+    rlang,
+    rstudioapi,
+    sf,
+    tidyterra,
+    testthat (>= 3.2.0),
+    tidyr,
+    utils,
+    usethis
+Suggests:
+    downloadthis,
+    here,
+    magick,
+    ragg,
+    rmarkdown
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3
