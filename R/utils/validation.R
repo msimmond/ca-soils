@@ -14,9 +14,22 @@ library(readxl)
 validate_data_file <- function(file_path, req_fields, language = "english") {
   error_list <- list()
   
+  # Debug: Check req_fields structure
+  if (is.null(req_fields) || nrow(req_fields) == 0) {
+    error_list[["config_error"]] <- "Required fields configuration is empty or invalid"
+    return(error_list)
+  }
+  
   # Read required fields configuration
   req_fields_data <- req_fields %>% filter(sheet == "Data")
   req_fields_dd <- req_fields %>% filter(sheet == "Data Dictionary")
+  
+  
+  # Check if we have any data fields
+  if (nrow(req_fields_data) == 0) {
+    error_list[["config_error"]] <- "No data fields found in configuration"
+    return(error_list)
+  }
   
   ### Check 1: Does the xlsx file have 'Data' and 'Data Dictionary' tabs?
   sheets_present <- readxl::excel_sheets(file_path)
@@ -80,6 +93,18 @@ validate_data_file <- function(file_path, req_fields, language = "english") {
     validation_rule <- req_fields_data$validation_rule[i]
     required <- req_fields_data$required[i]
     
+    
+    # Skip if field is empty, NULL, or NA
+    if (is.null(field) || length(field) == 0 || any(is.na(field)) || any(field == "", na.rm = TRUE)) {
+      next
+    }
+    
+    # Check for missing required fields
+    if (required && !(field %in% colnames(data))) {
+      error_list[[paste0("missing_", field)]] <- paste("Missing required column:", field)
+    }
+    
+    # Only validate fields that exist in the data
     if (field %in% colnames(data)) {
       # Check data type
       if (data_type == "integer" && required) {
@@ -88,33 +113,42 @@ validate_data_file <- function(file_path, req_fields, language = "english") {
         }
       }
       
-      # Check validation rules
-      if (validation_rule == "no_duplicates" && required) {
-        duplicates <- data %>%
-          count(!!sym(field)) %>%
-          filter(n > 1)
-        if (nrow(duplicates) > 0) {
-          error_list[[paste0("duplicates_", field)]] <- paste("Duplicate", field, "values found:", paste(duplicates[[field]], collapse = ", "))
-        }
+      # Check validation rules (can be multiple rules separated by commas)
+      if (is.null(validation_rule) || is.na(validation_rule) || validation_rule == "") {
+        # Skip validation if no rules specified
+        next
       }
       
-      if (validation_rule == "not_empty" && required) {
-        if (any(is.na(data[[field]]) | data[[field]] == "")) {
-          error_list[[paste0("empty_", field)]] <- paste(field, "cannot contain empty values")
-        }
-      }
+      validation_rules <- strsplit(validation_rule, ",")[[1]]
+      validation_rules <- trimws(validation_rules)  # Remove any whitespace
       
-      if (validation_rule == ">= 2000" && required) {
-        if (any(!is.na(data[[field]]) & data[[field]] < 2000)) {
-          error_list[[paste0("year_", field)]] <- paste(field, "must be >= 2000")
+      for (rule in validation_rules) {
+        if (rule == "no_duplicates" && required) {
+          duplicates <- data %>%
+            count(!!sym(field)) %>%
+            filter(n > 1)
+          if (nrow(duplicates) > 0) {
+            error_list[[paste0("duplicates_", field)]] <- paste("Duplicate", field, "values found:", paste(duplicates[[field]], collapse = ", "))
+          }
         }
-      }
-      
-      if (validation_rule == "valid_texture" && required) {
-        valid_textures <- c("sand", "loamy sand", "sandy loam", "loam", "silt loam", "silt", "sandy clay loam", "clay loam", "silty clay loam", "sandy clay", "silty clay", "clay")
-        invalid_textures <- unique(data[[field]][!is.na(data[[field]]) & !tolower(data[[field]]) %in% valid_textures])
-        if (length(invalid_textures) > 0) {
-          error_list[[paste0("texture_", field)]] <- paste("Invalid texture values:", paste(invalid_textures, collapse = ", "))
+        
+        if (rule == "not_empty" && required) {
+          if (any(is.na(data[[field]]) | data[[field]] == "")) {
+            error_list[[paste0("empty_", field)]] <- paste(field, "cannot contain empty values")
+          }
+        }
+        if (rule == ">= 2000" && required) {
+          if (any(!is.na(data[[field]]) & data[[field]] < 2000)) {
+            error_list[[paste0("year_", field)]] <- paste(field, "must be >= 2000")
+          }
+        }
+        
+        if (rule == "valid_texture" && required) {
+          valid_textures <- c("sand", "loamy sand", "sandy loam", "loam", "silt loam", "silt", "sandy clay loam", "clay loam", "silty clay loam", "sandy clay", "silty clay", "clay")
+          invalid_textures <- unique(data[[field]][!is.na(data[[field]]) & !tolower(data[[field]]) %in% valid_textures])
+          if (length(invalid_textures) > 0) {
+            error_list[[paste0("texture_", field)]] <- paste("Invalid texture values:", paste(invalid_textures, collapse = ", "))
+          }
         }
       }
     }

@@ -142,7 +142,14 @@ mod_download_server <- function(id, cfg, state) {
         source("R/utils/validation.R")
         
         # Read required fields configuration
-        req_fields <- read.csv("config/required-fields.csv")
+        # Read required fields configuration using readr for better CSV parsing
+        req_fields <- readr::read_csv("config/required-fields.csv", 
+                                    col_types = readr::cols(.default = "c"),
+                                    locale = readr::locale(encoding = "UTF-8"),
+                                    show_col_types = FALSE)
+        
+        # Convert required column to logical
+        req_fields$required <- as.logical(req_fields$required)
         
         # Validate the uploaded file
         validation_results <- validate_data_file(input$file$datapath, req_fields)
